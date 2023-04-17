@@ -61,6 +61,16 @@ function download_file(URL,location)
     end
 end
 
+function create_startup()
+    if fs.exists("startup.lua") then
+        log("File startup.lua already exists, deleting old file")
+        fs.delete("startup.lua")
+    end
+    log("Creating startup.lua")
+    myStartup = fs.open("startup.lua","w")
+    myStartup.write('shell.run("ReactorControl/Startup.lua")')
+end 
+
 function update()
     delete_all(files)
     download_all(files)
@@ -134,6 +144,7 @@ else
                 end
             end
         end
+        create_startup()
     elseif key == keys.backspace then
         return false
     end
