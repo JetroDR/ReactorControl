@@ -4,16 +4,16 @@
         "files.json": "files.json"
     },
     "ReactorControl/System/": {
-        "Control.lua": "Control.lua",
-        "Display.lua": "Display.lua",
-        "Redstone.lua": "Redstone.lua",
-        "Config.cfg": "Config.cfg"
+        "System/Control.lua": "Control.lua",
+        "System/Display.lua": "Display.lua",
+        "System/Redstone.lua": "Redstone.lua",
+        "System/Config.cfg": "Config.cfg"
     },
     "ReactorControl/Symbols/": {
-        "Start.nfp": "Start.nfp",
-        "Stop.nfp": "Stop.nfp",
-        "RadioActive.nfp": "RadioActive.nfp",
-        "Battery.nfp": "Battery.nfp"
+        "Symbols/Start.nfp": "Start.nfp",
+        "Symbols/Stop.nfp": "Stop.nfp",
+        "Symbols/RadioActive.nfp": "RadioActive.nfp",
+        "Symbols/Battery.nfp": "Battery.nfp"
     },
     "ReactorControl/": {
         "Startup.lua": "Startup.lua"
