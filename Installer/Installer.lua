@@ -149,3 +149,5 @@ else
         return false
     end
 end
+
+os.reboot()
