@@ -1,7 +1,7 @@
 {
     "ReactorControl/Installer/": {
-        "Installer.lua": "Installer/Installer.lua",
-        "files.json": "Installer/files.json"
+        "Installer.lua": "Installer.lua",
+        "files.json": "files.json"
     },
     "ReactorControl/System/": {
         "Control.lua": "Control.lua",

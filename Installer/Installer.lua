@@ -85,14 +85,14 @@ myLog.close()
 
 if #arg == 0 then
     log("No arguments included")
-    branch = "main"
+    branch = "master"
     checkUpdate = false
 elseif #arg >= 1 and #args <= 2 then
     log(#arg.." argument"..(#arg > 1 and "s").." included:")
     for i = 1, #arg do
         log(arg[i])
-        if arg[i] == "stable" or arg[1] == "main"  then
-            branch = "main"
+        if arg[i] == "stable" or arg[1] == "master"  then
+            branch = "master"
         elseif arg[i] == "update" then
             CheckUpdate = true
         end
@@ -103,7 +103,7 @@ else
     error("Invalid amount of arguments")
 end
 if not(branch) then
-    branch = "main"
+    branch = "master"
 end
 if not(CheckUpdate) then
     CheckUpdate = false
@@ -129,7 +129,8 @@ else
                 end
             else
                 for file, URL in pairs(folder) do
-                    download_file(relURL..URL,folderName..file)
+                    download_file(relURL..folderName..URL,folderName..file)
+                end
             end
         end
     elseif key == keys.backspace then
