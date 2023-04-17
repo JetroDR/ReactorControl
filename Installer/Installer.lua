@@ -110,7 +110,7 @@ if not(CheckUpdate) then
 end
 
 relURL = repoURL..branch.."/"
-log("\nBranch: "..branch)
+log("\nBranch: "..branch.."\n")
  
 print(name)
 if CheckUpdate then
@@ -120,16 +120,17 @@ else
     print("Press enter to continue or backspace to abort")
     event, key = os.pullEvent("key")
     if key == keys.enter then
-        download_file(relURL.."Installer/files.json","ReactorControl/Installer/files.json")
+        --download_file(relURL.."Installer/files.json","ReactorControl/Installer/files.json")
         files = read_file("ReactorControl/Installer/files.json")
         for folderName, folder in pairs(files) do
+                log("[ERROR] "..folderName)
             if folderName == "OS/APIs/" then
                 for file, URL in pairs(folder) do
                     download_file(repoAPI..URL,folderName..file)
                 end
             else
                 for file, URL in pairs(folder) do
-                    download_file(relURL..folderName..URL,folderName..file)
+                    download_file(relURL..URL,folderName..file)
                 end
             end
         end

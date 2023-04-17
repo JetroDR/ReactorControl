@@ -1,19 +1,19 @@
 {
     "ReactorControl/Installer/": {
-        "Installer.lua": "Installer.lua",
-        "files.json": "files.json"
+        "Installer.lua": "Installer/Installer.lua",
+        "files.json": "Installer/files.json"
     },
     "ReactorControl/System/": {
-        "Control.lua": "Control.lua",
-        "Display.lua": "Display.lua",
-        "Redstone.lua": "Redstone.lua",
-        "Config.cfg": "Config.cfg"
+        "Control.lua": "System/Control.lua",
+        "Display.lua": "System/Display.lua",
+        "Redstone.lua": "System/Redstone.lua",
+        "Config.cfg": "System/Config.cfg"
     },
     "ReactorControl/Symbols/": {
-        "Start.nfp": "Start.nfp",
-        "Stop.nfp": "Stop.nfp",
-        "RadioActive.nfp": "RadioActive.nfp",
-        "Battery.nfp": "Battery.nfp"
+        "Start.nfp": "Symbols/Start.nfp",
+        "Stop.nfp": "Symbols/Stop.nfp",
+        "RadioActive.nfp": "Symbols/RadioActive.nfp",
+        "Battery.nfp": "Symbols/Battery.nfp"
     },
     "ReactorControl/": {
         "Startup.lua": "Startup.lua"
