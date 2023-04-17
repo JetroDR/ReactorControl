@@ -1,3 +1,11 @@
+--[[
+
+    Name = Startup.lua
+    Version = 0.1.1
+    Author = Jetro
+
+]]
+
 local name = "ReactorControl"
 local debug = true
 
@@ -23,10 +31,10 @@ else
 end
 
 if StartupMode == nil or StartupMode == "" then
-    StartupMode = name.."_normal"
+    StartupMode = "normal"
 end
 
-if StartupMode == name.."_normal" then
+if StartupMode == "normal" then
     for i = 1, #file.reactorcontrol do
         if i ~= 1 then
             multishell.launch({},file.reactorcontrol[i])
@@ -41,6 +49,6 @@ if StartupMode == name.."_normal" then
     end
     multishell.setFocus(1)
     shell.run(file.reactorcontrol[1])
-elseif StartupMode == name.."_Installer" then
-    shell.run(name.."/Installer.lua")
+elseif StartupMode == "installer" then
+    shell.run(name.."/Installer/Installer.lua")
 end

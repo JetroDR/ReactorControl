@@ -1,7 +1,7 @@
 --[[
 
     Name = Control.lua
-    Version = 0.1.2.5
+    Version = 0.1.2.6
     Author = Jetro
 
 ]]
@@ -179,7 +179,7 @@ function draw_menu_t()
         if key == keys.y then
             sleep(.1)
             myStartup = fs.open("OS/files/StartupMode.txt","w")
-            myStartup.write(name.."_Installer")
+            myStartup.write("installer")
             myStartup.close()
             os.reboot()
         elseif key == keys.n then

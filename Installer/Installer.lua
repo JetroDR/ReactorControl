@@ -1,7 +1,7 @@
 --[[
 
     Name = Installer.lua
-    Version = 0.3.1
+    Version = 0.3.2
     Author = Jetro
 
 ]]
@@ -71,18 +71,6 @@ function create_startup()
     myStartup.write('shell.run("ReactorControl/Startup.lua")')
 end 
 
-function update()
-    delete_all(files)
-    download_all(files)
-    log("\nLogFile: "..logFile)
-    log("Rebooting...")
-    myStartup = fs.open("OS/files/StartupMode.txt","w")
-    myStartup.write(name.."_normal")
-    myStartup.close()
-    sleep(2)
-    os.reboot()
-end
-
 -- Main
  
 shell.run("clear")
@@ -150,4 +138,7 @@ else
     end
 end
 
+myStartup = fs.open("OS/files/StartupMode.txt","w")
+myStartup.write("normal")
+myStartup.close()
 os.reboot()
