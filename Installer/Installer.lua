@@ -1,7 +1,7 @@
 --[[
 
     Name = Installer.lua
-    Version = 0.3.2
+    Version = 0.3.3
     Author = Jetro
 
 ]]
@@ -121,7 +121,6 @@ else
         --download_file(relURL.."Installer/files.json","ReactorControl/Installer/files.json")
         files = read_file("ReactorControl/Installer/files.json")
         for folderName, folder in pairs(files) do
-                log("[ERROR] "..folderName)
             if folderName == "OS/APIs/" then
                 for file, URL in pairs(folder) do
                     download_file(repoAPI..URL,folderName..file)

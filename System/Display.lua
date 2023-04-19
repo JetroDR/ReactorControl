@@ -1,7 +1,7 @@
 --[[
 
     Name = Diplay.lua
-    Version = 0.1.2.7
+    Version = 0.1.2.8
     Author = Jetro
 
 ]]
@@ -11,15 +11,14 @@
 local name = "ReactorControl"
 local filename = name.."/System/Display.lua"
 
-local reactor = {}
-local turbine = {}
-local battery = {}
-local mon = {}
-
 local apipath = "OS/APIs/"
 local apis = {
     "screen",
 }
+local reactor = {}
+local turbine = {}
+local battery = {}
+local mon = {}
 
 local last_program_state
 
@@ -70,12 +69,12 @@ end
 
 function log(logType, data)
     myLog = fs.open(file.log,"a")
-    myLog.write("["..string.upper(logType).."] "..data.."\n")
+    myLog.write("["..string.upper(logType).."] ["..filename.."] "..data.."\n")
     myLog.close()
     if string.lower(logType) == "error" then
-        table.insert(config.error,"["..logType.."] "..data)
+        table.insert(config.error,"["..logType.."] ["..filename.."] "..data)
     elseif string.lower(logType) == "warning" then
-        table.insert(config.warning,"["..logType.."] "..data)
+        table.insert(config.warning,"["..logType.."] ["..filename.."] "..data)
     end
     config_write()
 end

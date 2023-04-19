@@ -1,7 +1,7 @@
 --[[
 
     Name = Redstone.lua
-    Version = 0.1.0.3
+    Version = 0.1.0.4
     Author = Jetro
 
 ]]
@@ -10,7 +10,6 @@
 
 local name = "ReactorControl"
 local filename = name.."/System/Redstone.lua"
-local version = "1.0.0"
 
 local file = {
     config = "ReactorControl/System/Config.cfg",
@@ -44,12 +43,12 @@ end
 
 function log(logType, data)
     myLog = fs.open(file.log,"a")
-    myLog.write("["..string.upper(logType).."] "..data.."\n")
+    myLog.write("["..string.upper(logType).."] ["..filename.."] "..data.."\n")
     myLog.close()
     if string.lower(logType) == "error" then
-        table.insert(config.error,"["..logType.."] "..data)
+        table.insert(config.error,"["..logType.."] ["..filename.."] "..data)
     elseif string.lower(logType) == "warning" then
-        table.insert(config.warning,"["..logType.."] "..data)
+        table.insert(config.warning,"["..logType.."] ["..filename.."] "..data)
     end
     config_write()
 end
