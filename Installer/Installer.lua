@@ -85,13 +85,13 @@ if #arg == 0 then
     log("No arguments included")
     branch = "master"
     checkUpdate = false
-elseif #arg >= 1 and #args <= 2 then
-    log(#arg.." argument"..(#arg > 1 and "s").." included:")
+elseif #arg >= 1 and #arg <= 2 then
+    log(#arg.." argument"..((#arg > 1 and "s") or "").." included:")
     for i = 1, #arg do
         log(arg[i])
-        if arg[i] == "stable" or arg[1] == "master"  then
+        if arg[i] == "stable" or arg[i] == "master"  then
             branch = "master"
-        elseif arg[i] == "development" or arg[1] == "beta" then
+        elseif arg[i] == "development" or arg[i] == "beta" then
             branch = "development"
         elseif arg[i] == "update" then
             CheckUpdate = true
