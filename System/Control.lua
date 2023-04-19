@@ -1,7 +1,7 @@
 --[[
 
     Name = Control.lua
-    Version = 0.1.2.6
+    Version = 0.1.2.8
     Author = Jetro
 
 ]]
@@ -10,11 +10,16 @@
 
 local name = "ReactorControl"
 local filename = name.."/System/Control.lua"
-local version = "1.2.4"
+local version = "1.2.8"
 
 local file = {
     config = "ReactorControl/System/Config.cfg",
     log = "ReactorControl/System/log.log"
+}
+
+local apipath = "OS/APIs/"
+local apis = {
+    "split",
 }
 
 local reactor = {}
@@ -38,6 +43,8 @@ local page = {
 }
 
 local tW, tH
+local command
+local isnumber = {}
 
 -- Functions
 
@@ -106,6 +113,26 @@ function init_peripheral()
     for i = 1, #mon do
         mon[i] = peripheral.wrap(mon[i])
     end
+end
+
+function init_apis()
+    log("info","loading APIs --")
+    for i = 1, #apis do
+        if fs.exists(apipath..apis[i]..".api") then
+            Succes = os.loadAPI(apipath..apis[i]..".api")
+            if Succes then
+                _G[apis[i]] = _G[apis[i]..".api"]
+                log("debug","API succesfully loaded: "..apis[i]..".api")
+            else
+                log("error","Unable to load API: "..apis[i]..".api")
+                error()
+            end
+        else
+            log("error","API not found: "..apis[i]..".api")
+            error()
+        end
+    end
+    log("info","completed")
 end
 
 function init_term()
@@ -193,7 +220,7 @@ end
 
 function reactor_start()
     for i = 1, #reactor do
-        if config.reactor.lockout[i] then
+        if config.reactor.locked[i] then
             reactor[i].setActive(true)
         end
     end
@@ -207,7 +234,7 @@ end
 
 function turbine_start()
     for i = 1, #turbine do
-        if config.turbine.lockout[i] then
+        if config.turbine.locked[i] then
             turbine[i].setActive(true)
         end
     end
@@ -230,6 +257,85 @@ function control_touch()
         if command == "return" then
             config.page.term = "home"
             config_write()
+        else
+            command = split.split(command," ")
+            isnumber = {}
+            for i = 1, #command do
+                if tonumber(command[i]) then
+                    isnumber[i] = true
+                else
+                    isnumber[i] = false
+                end
+            end
+            if command[1] == "reactor_coolant_side" then
+                if command[2] == "get" then
+                    feedback = config.reactor.coolant_side
+                elseif command[2] and not(isnumber[2]) then
+                    for _, side in pairs({"left", "right", "front", "back", "top", "bottom"}) do
+                        if command[2] == side then
+                            input_side = command[2]
+                        end
+                        if input_side then
+                            config.reactor.coolant_side = command[2]
+                            feedback = "Changed "..command[1].." to "..command[2]
+                            config_write()
+                        else
+                            feedback = "Incorrect side"
+                        end
+                    end
+                else
+                    feedback = "Usage: reactor_coolant_side <side>"
+                end
+            elseif command[1] == "battery_high" then
+                if command[2] == "get" then
+                    feedback = config.setting.battery_high
+                elseif command[2] then
+                    if command[2] and isnumber[2] then
+                        if command[2] >= 0 and command[2] <= 100 then
+                            if command[2] > config.setting.battery_low then
+                                config.setting.battery_high = command[2]
+                                feedback = "Changed "..command[1].." to "..command[2]
+                                config_write()
+                            else
+                                feedback = "parameter must be higher then battery_low"
+                            end
+                        else
+                            feedback = "parameter must be a number between 0 and 100"
+                        end
+                    else
+                        feedback = "parameter must be a number"
+                    end
+                else
+                    feedback = "Usage: battery_high <0-100>"
+                end
+            elseif command[1] == "battery_low" then
+                if command[2] == "get" then
+                    feedback = config.setting.battery_low
+                elseif command[2] then
+                    if command[2] and isnumber[2] then
+                        if command[2] >= 0 and command[2] <= 100 then
+                            if command[2] < config.setting.battery_high then
+                                config.setting.battery_low = command[2]
+                                feedback = "Changed "..command[1].." to "..command[2]
+                                config_write()
+                            else
+                                feedback = "parameter must be lower then battery_high"
+                            end
+                        else
+                            feedback = "parameter must be a number between 0 and 100"
+                        end
+                    else
+                        feedback = "parameter must be a number"
+                    end
+                else
+                    feedback = "Usage: battery_low <0-100>"
+                end
+            else
+                feedback = "Unknown command "..command[1]
+            end
+            screen.drawText(4,tH-4,feedback)
+            log("debug", feedback)
+            sleep(2)
         end
     else
         if event == "monitor_touch" then
@@ -367,6 +473,7 @@ end
 
 function start()
     config_read()
+    init_apis()
     init_peripheral()
     init_term()
     main()

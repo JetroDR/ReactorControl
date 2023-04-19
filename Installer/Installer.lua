@@ -1,7 +1,7 @@
 --[[
 
     Name = Installer.lua
-    Version = 0.3.2
+    Version = 0.3.3
     Author = Jetro
 
 ]]
@@ -85,12 +85,14 @@ if #arg == 0 then
     log("No arguments included")
     branch = "master"
     checkUpdate = false
-elseif #arg >= 1 and #args <= 2 then
-    log(#arg.." argument"..(#arg > 1 and "s").." included:")
+elseif #arg >= 1 and #arg <= 2 then
+    log(#arg.." argument"..((#arg > 1 and "s") or "").." included:")
     for i = 1, #arg do
         log(arg[i])
-        if arg[i] == "stable" or arg[1] == "master"  then
+        if arg[i] == "stable" or arg[i] == "master"  then
             branch = "master"
+        elseif arg[i] == "development" or arg[i] == "beta" then
+            branch = "development"
         elseif arg[i] == "update" then
             CheckUpdate = true
         end
@@ -121,7 +123,6 @@ else
         --download_file(relURL.."Installer/files.json","ReactorControl/Installer/files.json")
         files = read_file("ReactorControl/Installer/files.json")
         for folderName, folder in pairs(files) do
-                log("[ERROR] "..folderName)
             if folderName == "OS/APIs/" then
                 for file, URL in pairs(folder) do
                     download_file(repoAPI..URL,folderName..file)

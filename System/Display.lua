@@ -1,7 +1,7 @@
 --[[
 
     Name = Diplay.lua
-    Version = 0.1.2.6
+    Version = 0.1.2.8
     Author = Jetro
 
 ]]
@@ -11,15 +11,14 @@
 local name = "ReactorControl"
 local filename = name.."/System/Display.lua"
 
-local reactor = {}
-local turbine = {}
-local battery = {}
-local mon = {}
-
 local apipath = "OS/APIs/"
 local apis = {
     "screen",
 }
+local reactor = {}
+local turbine = {}
+local battery = {}
+local mon = {}
 
 local last_program_state
 
@@ -70,12 +69,12 @@ end
 
 function log(logType, data)
     myLog = fs.open(file.log,"a")
-    myLog.write("["..string.upper(logType).."] "..data.."\n")
+    myLog.write("["..string.upper(logType).."] ["..filename.."] "..data.."\n")
     myLog.close()
     if string.lower(logType) == "error" then
-        table.insert(config.error,"["..logType.."] "..data)
+        table.insert(config.error,"["..logType.."] ["..filename.."] "..data)
     elseif string.lower(logType) == "warning" then
-        table.insert(config.warning,"["..logType.."] "..data)
+        table.insert(config.warning,"["..logType.."] ["..filename.."] "..data)
     end
     config_write()
 end
@@ -150,14 +149,14 @@ function init_peripheral()
         mon[i] = peripheral.wrap(mon[i])
     end
 
-    if #config.reactor.lockout == 0 then
+    if #config.reactor.locked == 0 then
         for i = 1, #reactor do
-            config.reactor.lockout[i] = true
+            config.reactor.locked[i] = true
         end
     end
-    if #config.turbine.lockout == 0 then
+    if #config.turbine.locked == 0 then
         for i = 1, #turbine do
-            config.turbine.lockout[i] = true
+            config.turbine.locked[i] = true
         end
     end
     
@@ -221,13 +220,16 @@ function draw_menu_m()
         screen.drawTextM(2,5,"REACTOR: ",colors.blue,colors.black)
         screen.drawTextM(11,5,((not(reactor[1].getActive()) and "offline") or (reactor[1].getActive() and "online")),colors.blue,((not(reactor[1].getActive()) and colors.red) or (reactor[1].getActive() and colors.lime)))
         for i = 1,#turbine do
-            screen.drawTextM(2,6+i,tostring(i),(config.turbine.lockout[i] and colors.blue) or colors.red,colors.black)
+            screen.drawTextM(2,6+i,tostring(i),(config.turbine.locked[i] and colors.blue) or colors.red,colors.black)
             screen.drawTextM(5,6+i,": TURBINE:",colors.blue,colors.black)
             screen.drawTextM(16,6+i,((not(turbine[i].getActive()) and "offline") or (turbine[i].getActive() and "online")),colors.blue,((not(turbine[i].getActive()) and colors.red) or (turbine[i].getActive() and colors.lime)))
-            screen.drawTextM(27,6+i,"COILS: ",colors.blue,colors.black)
-            screen.drawTextM(34,6+i,((not(turbine[i].getInductorEngaged()) and "disengaged") or (turbine[i].getInductorEngaged() and "engaged")),colors.blue,((not(turbine[i].getInductorEngaged()) and colors.red) or (turbine[i].getInductorEngaged() and colors.lime)))
-            screen.drawTextM(48,6+i,"SPEED: "..(math.floor(turbine[i].getRotorSpeed()*100)/100).." RPM",colors.blue,colors.black)
-            screen.drawTextM(70,6+i,(not(config.turbine.lockout[i]) and "LOCKOUT") or "",colors.red,colors.black)
+            screen.drawTextM(26,6+i,"COILS: ",colors.blue,colors.black)
+            screen.drawTextM(33,6+i,((not(turbine[i].getInductorEngaged()) and "disengaged") or (turbine[i].getInductorEngaged() and "engaged")),colors.blue,((not(turbine[i].getInductorEngaged()) and colors.red) or (turbine[i].getInductorEngaged() and colors.lime)))
+            screen.drawTextM(45,6+i,"SPEED: "..math.floor(turbine[i].getRotorSpeed()),colors.blue,colors.black)
+            screen.drawTextM(58,6+i,"RPM")
+            screen.drawTextM(65,6+i,"ENERGY: "..math.floor(turbine[i].getEnergyProducedLastTick()),colors.blue,colors.black)
+            screen.drawTextM(80,6+i,"RF/t")
+            screen.drawTextM(85,6+i,(not(config.turbine.locked[i]) and "LOCKED") or "",colors.red,colors.black)
         end
         screen.drawRectM(mW-11,mH-3-20,10,20,colors.gray,true,colors.gray)
         screen.drawRectM(mW-10,mH-3-19+(18-math.floor(BatPercent/100*18)),8,math.floor(BatPercent/100*18),colors.lime,true,colors.lime)
@@ -292,10 +294,10 @@ end
 
 function control()
     for i = 1, #reactor do
-        if not(config.reactor.lockout[i]) then
+        if not(config.reactor.locked[i]) then
             reactor[i].setActive(false)
         else
-            if false then -- Reactor lockout rules
+            if false then -- Reactor locked rules
             else
                 if config.button.automode then
                     if BatPercent > config.setting.battery_high then
@@ -312,7 +314,7 @@ function control()
                             log("warning","reactor "..i..": coolant level low")
                             rs.setOutput(config.reactor.coolant_side,true)                            
                         end
-                    elseif reactor[i].getCoolantAmount() > 21800*0.25 then
+                    elseif reactor[i].getCoolantAmount() > 21800*0.5 then
                         if rs.getOutput(config.reactor.coolant_side) then
                             rs.setOutput(config.reactor.coolant_side,false)
                         end
@@ -323,7 +325,7 @@ function control()
                             log("warning","reactor "..i..": coolant level low")
                             rs.setOutput(config.reactor.coolant_side,true)                            
                         end
-                    elseif reactor[i].getCoolantAmount() > 21800*0.25 then
+                    elseif reactor[i].getCoolantAmount() > 21800*0.5 then
                         if rs.getOutput(config.reactor.coolant_side) then
                             rs.setOutput(config.reactor.coolant_side,false)
                         end
@@ -334,14 +336,14 @@ function control()
     end
 
     for i = 1, #turbine do
-        if not(config.turbine.lockout[i]) then
+        if not(config.turbine.locked[i]) then
             turbine[i].setActive(false)
             turbine[i].setInductorEngaged(true)
         else
             if turbine[i].getRotorSpeed() > config.setting.overspeed then
-               config.turbine.lockout[i] = false
+               config.turbine.locked[i] = false
                config_write()
-               log("error","turbine "..i..": lockout - overspeed") 
+               log("error","turbine "..i..": locked - overspeed") 
             else
                 if config.button.automode then
                     if BatPercent > config.setting.battery_high then
