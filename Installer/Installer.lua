@@ -91,6 +91,8 @@ elseif #arg >= 1 and #args <= 2 then
         log(arg[i])
         if arg[i] == "stable" or arg[1] == "master"  then
             branch = "master"
+        elseif arg[i] == "development" or arg[1] == "beta" then
+            branch = "development"
         elseif arg[i] == "update" then
             CheckUpdate = true
         end
