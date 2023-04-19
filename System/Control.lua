@@ -1,7 +1,7 @@
 --[[
 
     Name = Control.lua
-    Version = 0.1.2.6
+    Version = 0.1.2.7
     Author = Jetro
 
 ]]
@@ -193,7 +193,7 @@ end
 
 function reactor_start()
     for i = 1, #reactor do
-        if config.reactor.lockout[i] then
+        if config.reactor.locked[i] then
             reactor[i].setActive(true)
         end
     end
@@ -207,7 +207,7 @@ end
 
 function turbine_start()
     for i = 1, #turbine do
-        if config.turbine.lockout[i] then
+        if config.turbine.locked[i] then
             turbine[i].setActive(true)
         end
     end
