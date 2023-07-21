@@ -19,6 +19,7 @@
         "Startup.lua": "Startup.lua"
     },
     "OS/APIs/": {
-        "screen.api": "screen.api"
+        "screen.api": "screen.api",
+        "split.api": "split.api"
     }
 }
