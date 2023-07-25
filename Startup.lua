@@ -1,7 +1,7 @@
 --[[
 
     Name = Startup.lua
-    Version = 0.1.1
+    Version = 0.1.1.1
     Author = Jetro
 
 ]]
@@ -16,6 +16,7 @@ local file = {
         name.."/System/Control.lua",
         name.."/System/Display.lua",
         name.."/System/Redstone.lua",
+        name.."/System/Datalogger.lua",
     },
 }
 
@@ -43,9 +44,10 @@ if StartupMode == "normal" then
     multishell.setTitle(1,"Control")
     multishell.setTitle(2,"Display")
     multishell.setTitle(3,"Redstone")
+    multishell.setTitle(4,"Datalogger")
     if debug then
         shell.run("fg")
-        multishell.setTitle(4,"Debug")
+        multishell.setTitle(5,"Debug")
     end
     multishell.setFocus(1)
     shell.run(file.reactorcontrol[1])
