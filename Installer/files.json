@@ -7,6 +7,7 @@
         "Control.lua": "System/Control.lua",
         "Display.lua": "System/Display.lua",
         "Redstone.lua": "System/Redstone.lua",
+        "Datalogger.lua": "System/Datalogger.lua",
         "Config.cfg": "System/Config.cfg"
     },
     "ReactorControl/Symbols/": {
