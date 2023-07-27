@@ -120,7 +120,7 @@ else
     print("Press enter to continue or backspace to abort")
     event, key = os.pullEvent("key")
     if key == keys.enter then
-        --download_file(relURL.."Installer/files.json","ReactorControl/Installer/files.json")
+        download_file(relURL.."Installer/files.json","ReactorControl/Installer/files.json")
         files = read_file("ReactorControl/Installer/files.json")
         for folderName, folder in pairs(files) do
             if folderName == "OS/APIs/" then
