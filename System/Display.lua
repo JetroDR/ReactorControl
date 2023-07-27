@@ -1,7 +1,7 @@
 --[[
 
     Name = Diplay.lua
-    Version = 0.1.2.8
+    Version = 0.1.2.9
     Author = Jetro
 
 ]]
@@ -253,7 +253,6 @@ function draw_menu_m()
         if battery[1].getAverageChangePerTick() >= 0 then
             ChargeType = "Full: "
             ChargeTime = (math.floor(10*math.abs((battery[1].getMaxEnergyStored()-battery[1].getEnergyStored())/battery[1].getAverageChangePerTick()/20)))/10
-            
         else
             ChargeType = "Empty: "
             ChargeTime = (math.floor(10*math.abs(battery[1].getEnergyStored()/battery[1].getAverageChangePerTick()/20)))/10
@@ -262,6 +261,8 @@ function draw_menu_m()
         ChargeMinutes = math.floor((ChargeTime-ChargeHours*3600)/60)
         ChargeSeconds = math.floor((ChargeTime-ChargeHours*3600-ChargeMinutes*60))
         screen.drawTextM(5,13,"Time until "..ChargeType..ChargeHours.." h "..ChargeMinutes.." m "..ChargeSeconds.." s")
+        screen.drawTextM(5,15,"Adaptive Battery: ",colors.blue)
+        draw_button(23,15,config.button.adaptive_battery)
     end
 end
 
@@ -300,13 +301,27 @@ function control()
             if false then -- Reactor locked rules
             else
                 if config.button.automode then
-                    if BatPercent > config.setting.battery_high then
-                        if reactor[i].getActive() then
-                            reactor[i].setActive(false)
+                    if not(config.button.adaptive_battery) then
+                        if BatPercent > config.setting.battery_high then
+                            if reactor[i].getActive() then
+                                reactor[i].setActive(false)
+                            end
+                        elseif BatPercent < config.setting.battery_low then
+                            if not(reactor[i].getActive()) then
+                                reactor[i].setActive(true)
+                            end
                         end
-                    elseif BatPercent < config.setting.battery_low then
-                        if not(reactor[i].getActive()) then
-                            reactor[i].setActive(true)
+                    else
+                        term.setCursorPos(1,1)
+                        print((ChargeHours*60 + ChargeMinutes + ChargeSeconds/60))
+                        if ((ChargeHours*60 + ChargeMinutes + ChargeSeconds/60) < config.setting.battery_high_adaptive) and (battery[1].getAverageChangePerTick() > 0) then
+                            if reactor[i].getActive() then
+                                reactor[i].setActive(false)
+                            end
+                        elseif ((ChargeHours*60 + ChargeMinutes + ChargeSeconds/60) < config.setting.battery_low_adaptive) and (battery[1].getAverageChangePerTick() < 0) then
+                            if not(reactor[i].getActive()) then
+                                reactor[i].setActive(true)
+                            end
                         end
                     end
                     if reactor[i].getCoolantAmount() < 21800*0.25 then
@@ -346,13 +361,25 @@ function control()
                log("error","turbine "..i..": locked - overspeed") 
             else
                 if config.button.automode then
-                    if BatPercent > config.setting.battery_high then
-                        if turbine[i].getActive() then
-                            turbine[i].setActive(false)
+                    if not(config.button.adaptive_battery) then
+                        if BatPercent > config.setting.battery_high then
+                            if turbine[i].getActive() then
+                                turbine[i].setActive(false)
+                            end
+                        elseif BatPercent < config.setting.battery_low then
+                            if not(turbine[i].getActive()) then
+                                turbine[i].setActive(true)
+                            end
                         end
-                    elseif BatPercent < config.setting.battery_low then
-                        if not(turbine[i].getActive()) then
-                            turbine[i].setActive(true)
+                    else
+                        if ((ChargeHours*60 + ChargeMinutes + ChargeSeconds/60) < config.setting.battery_high_adaptive) and (battery[1].getAverageChangePerTick() > 0) then
+                            if turbine[i].getActive() then
+                                turbine[i].setActive(false)
+                            end
+                        elseif ((ChargeHours*60 + ChargeMinutes + ChargeSeconds/60) < config.setting.battery_low_adaptive) and (battery[1].getAverageChangePerTick() < 0) then
+                            if not(turbine[i].getActive()) then
+                                turbine[i].setActive(true)
+                            end
                         end
                     end
 

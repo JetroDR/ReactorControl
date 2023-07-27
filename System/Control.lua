@@ -1,7 +1,7 @@
 --[[
 
     Name = Control.lua
-    Version = 0.1.2.8
+    Version = 0.1.2.9
     Author = Jetro
 
 ]]
@@ -386,7 +386,18 @@ function control_touch()
             elseif config.page.mon == "turbine" then
             
             elseif config.page.mon == "battery" then
+                if x >= 23 and x <= 26 and y == 15 then
+                    if config.button.adaptive_battery then
+                        config.button.adaptive_battery = false
+                    elseif not(config.button.adaptive_battery) then
+                        config.button.adaptive_battery = true
+                    end
+                end
 
+                if last.button.adaptive_battery ~= config.button.adaptive_battery then
+                    config_write()
+                end
+                last.button.adaptive_battery = config.button.adaptive_battery
             end
         elseif event == "key" then
             key = a
