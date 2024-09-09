@@ -21,6 +21,6 @@
         "Battery.nfp": "Symbols/Battery.nfp"
     },
     "ReactorControl": {
-        "Startup.lua": "ReactorControl/Startup.lua"
+        "startup.lua": "ReactorControl/startup.lua"
     }
 }
