@@ -87,10 +87,10 @@ function check_version(FilePath, URL)
             gitHubVersion = gitHubVersion:sub(1,#gitHubVersion-1)
             log("debug", URL.." Version: "..gitHubVersion)
         else
-            githubVersion = fileContents
+            gitHubVersion = fileContents
         end
     else
-        log("error", "Unable to find URL:"..URL)
+        gitHubVersion = "File not found"
     end
     
     if fileVersion == gitHubVersion then
@@ -121,7 +121,7 @@ end
 function main()
     init_log()
     read_config()
-    print("[ CHECKING FOR UPDATES ]")
+    print("-- BOOTING "..Path.." v"..Version.." --")
     for i = 1, #config.files.boot do
         print("Checking "..Path..config.files.boot[i].file)
         check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)

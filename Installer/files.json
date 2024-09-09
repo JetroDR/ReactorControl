@@ -11,8 +11,8 @@
         "Config.cfg": "System/Config.cfg"
     },
     "System/APIs": {
-        "screen.api": "System/APIs/screen.api",
-        "split.api": "System/APIs/split.api"
+        "screen.lua": "System/APIs/screen.lua",
+        "split.lua": "System/APIs/split.lua"
     },
     "Symbols": {
         "Start.nfp": "Symbols/Start.nfp",
