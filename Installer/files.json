@@ -11,8 +11,8 @@
         "Config.cfg": "System/Config.cfg"
     },
     "System/APIs": {
-        "screen.api": "screen.api",
-        "split.api": "split.api"
+        "screen.api": "System/APIs/screen.api",
+        "split.api": "System/APIs/split.api"
     },
     "Symbols": {
         "Start.nfp": "Symbols/Start.nfp",
@@ -21,6 +21,6 @@
         "Battery.nfp": "Symbols/Battery.nfp"
     },
     "ReactorControl": {
-        "Startup.lua": "Startup.lua"
+        "Startup.lua": "ReactorControl/Startup.lua"
     }
 }

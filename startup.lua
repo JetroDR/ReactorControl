@@ -121,7 +121,9 @@ end
 function main()
     init_log()
     read_config()
+    print("[ CHECKING FOR UPDATES ]")
     for i = 1, #config.files.boot do
+        print("Checking "..Path..config.files.boot[i].file)
         check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
     end
     boot()
