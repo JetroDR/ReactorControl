@@ -132,8 +132,8 @@ function draw_menu()
         --screen.drawText(11,3,config.program_state,colors.blue,(string.lower(config.program_state) == "unknown" and colors.red) or colors.white)
     elseif page.term.active == "settings" then
         screen.drawText(1,5,"SETTINGS", colors.blue)
-        screen.drawText(1,6,"click on the command text box to enter a command")
-        screen.drawText(1,7,"type 'return' to go back to the homepage", colors.blue)
+        screen.drawText(1,6,"click on the command textbox to enter a command")
+        screen.drawText(1,7,"type 'return' to go back to exit the textbox", colors.blue)
         screen.drawText(4,h-9,"COMMAND",colors.blue)
         screen.drawRect(4,h-8,w-6,1,colors.gray)
         screen.drawText(4,h-5,"FEEDBACK",colors.blue)
@@ -319,7 +319,7 @@ function touch()
                     end
                     if string.lower(input[1]) == "return" then
                         feedback = ""
-                        page.term.active = "home"
+                        break
                     elseif string.lower(input[1]) == "reactor_coolant_side" then
                         if input[2] then
                             if string.lower(input[2]) == "get" then

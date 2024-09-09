@@ -8,6 +8,9 @@ local files = {
     log = Path.."/System/Files/ReactorControl.log",
 }
 
+local branch = "rework2.0"
+local repoURL = "https://raw.githubusercontent.com/JetroDR/ReactorControl/"
+
 function init_log()
     if fs.exists(files.log) then
         fs.delete(files.log)
@@ -38,33 +41,64 @@ function read_config()
     end
 end
 
-function update_checker()
-    for i = 1, #config.files.boot do
-        myFile = fs.open(Path..config.files.boot[i].file, "r")
+function check_version(FilePath, URL)
+    log("debug", "checking "..FilePath)
+    if fs.exists(FilePath) then
+        myFile = fs.open(FilePath, "r")
         fileContents = myFile.readAll()
         myFile.close()
 
         local _, numberChars = fileContents:lower():find('version = "')
-        local fileVersion = ""
-        local char = ""
+        if numberChars then
+            fileVersion = ""
+            local char = ""
 
-        while char ~= '"' do
-            numberChars = numberChars + 1
-            char = fileContents:sub(numberChars,numberChars)
-            fileVersion = fileVersion .. char
-        end
-
-        fileVersion = fileVersion:sub(1,#fileVersion-1)
-        log("debug", config.files.boot[i].name.." Version: "..fileVersion)
-
-        -- Insert GitHub Version logic
-        gitHubVersion = fileVersion -- Temp version fix
-
-        if fileVersion == gitHubVersion then
-            log("debug", Path..config.files.boot[i].file.." up to date")
+            while char ~= '"' do
+                numberChars = numberChars + 1
+                char = fileContents:sub(numberChars,numberChars)
+                fileVersion = fileVersion .. char
+            end
+            fileVersion = fileVersion:sub(1,#fileVersion-1)
+            log("debug", FilePath.." Version: "..fileVersion)
         else
-            log("debug", Path..config.files.boot[i].file.." out of date, update required")
+            fileVersion = fileContents
         end
+    else
+        fileVersion = "File not found"
+    end
+
+     -- Insert GitHub Version logic
+        
+    if http.checkURL(URL) then
+        myGithub = http.get(URL)
+        fileContents = myGithub.readAll()
+        myGithub.close()
+            
+        local _, numberChars = fileContents:lower():find('version = "')
+        if numberChars then
+            gitHubVersion = ""
+            local char = ""
+
+            while char ~= '"' do
+                numberChars = numberChars + 1
+                char = fileContents:sub(numberChars,numberChars)
+                gitHubVersion = gitHubVersion .. char
+            end
+            gitHubVersion = gitHubVersion:sub(1,#gitHubVersion-1)
+            log("debug", URL.." Version: "..gitHubVersion)
+        else
+            githubVersion = fileContents
+        end
+    else
+        log("error", "Unable to find URL:"..URL)
+    end
+    
+    if fileVersion == gitHubVersion then
+        log("debug", FilePath.." up to date")
+        return fileVersion
+    else
+        log("error", FilePath.." out of date, update required")
+        return false
     end
 end
 
@@ -87,9 +121,10 @@ end
 function main()
     init_log()
     read_config()
-    update_checker()
+    for i = 1, #config.files.boot do
+        check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
+    end
     boot()
 end
 
 main()
-multishell.setFocus(2)

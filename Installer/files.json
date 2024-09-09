@@ -1,26 +1,26 @@
 {
-    "ReactorControl/Installer/": {
+    "Installer": {
         "Installer.lua": "Installer/Installer.lua",
         "files.json": "Installer/files.json"
     },
-    "ReactorControl/System/": {
+    "System": {
         "Control.lua": "System/Control.lua",
         "Display.lua": "System/Display.lua",
         "Redstone.lua": "System/Redstone.lua",
         "Datalogger.lua": "System/Datalogger.lua",
         "Config.cfg": "System/Config.cfg"
     },
-    "ReactorControl/Symbols/": {
+    "System/APIs": {
+        "screen.api": "screen.api",
+        "split.api": "split.api"
+    },
+    "Symbols": {
         "Start.nfp": "Symbols/Start.nfp",
         "Stop.nfp": "Symbols/Stop.nfp",
         "RadioActive.nfp": "Symbols/RadioActive.nfp",
         "Battery.nfp": "Symbols/Battery.nfp"
     },
-    "ReactorControl/": {
+    "ReactorControl": {
         "Startup.lua": "Startup.lua"
-    },
-    "ReactorControl/System/APIs/": {
-        "screen.api": "screen.api",
-        "split.api": "split.api"
     }
 }
