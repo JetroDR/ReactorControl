@@ -1,3 +1,7 @@
+Name = "split.lua"
+Version = "1.0"
+Author = "Jetro"
+
 function split(pString, pPattern)
     local split_data = {}
     local fpat = "(.-)" .. pPattern

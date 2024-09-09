@@ -1,3 +1,7 @@
+Name = "screen.lua"
+Version = "1.0"
+Author = "Jetro"
+
 function drawRect(x,y,w,h,bColor, isFilled, fColor)
     OldColor = term.getBackgroundColor()
     cColor = term.getBackgroundColor()
