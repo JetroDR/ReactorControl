@@ -203,7 +203,7 @@ function install_files()
     installation_files = textutils.unserialiseJSON(myFiles.readAll())
     myFiles.close()
     
-    for _, table in pairs(installation_files) do
+    for tableName, table in pairs(installation_files) do
         for FileName, FilePath in pairs(table) do
             download_file(repoURL..branch.."/"..FilePath, Path.."/"..FilePath)
         end
