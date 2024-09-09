@@ -8,7 +8,7 @@
         "Display.lua": "System/Display.lua",
         "Redstone.lua": "System/Redstone.lua",
         "Datalogger.lua": "System/Datalogger.lua",
-        "Config.cfg": "System/Config.cfg"
+        "Config.cfg": "System/config.cfg"
     },
     "System/APIs": {
         "screen.lua": "System/APIs/screen.lua",
