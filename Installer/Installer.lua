@@ -78,7 +78,8 @@ function check_version(FilePath, URL)
             fileVersion = fileVersion:sub(1,#fileVersion-1)
             log("debug", FilePath.." Version: "..fileVersion)
         else
-            fileVersion = fileContents
+            fileVersion = ""
+            File_Contents = fileContents
         end
     else
         fileVersion = "File not found"
@@ -93,24 +94,25 @@ function check_version(FilePath, URL)
             
         local _, numberChars = fileContents:lower():find('version = "')
         if numberChars then
-            gitHubVersion = ""
+            GithubVersion = ""
             local char = ""
 
             while char ~= '"' do
                 numberChars = numberChars + 1
                 char = fileContents:sub(numberChars,numberChars)
-                gitHubVersion = gitHubVersion .. char
+                GithubVersion = GithubVersion .. char
             end
-            gitHubVersion = gitHubVersion:sub(1,#gitHubVersion-1)
-            log("debug", URL.." Version: "..gitHubVersion)
+            GithubVersion = GithubVersion:sub(1,#GithubVersion-1)
+            log("debug", URL.." Version: "..GithubVersion)
         else
-            gitHubVersion = fileContents
+            GithubVersion = ""
+            Github_Contents = fileContents
         end
     else
-        gitHubVersion = "File not found"
+        GithubVersion = "File not found"
     end
 
-    if fileVersion == gitHubVersion then
+    if fileVersion == GithubVersion  or File_Contents == Github_Contents then
         log("debug", FilePath.." up to date")
         return fileVersion
     else
@@ -120,7 +122,12 @@ function check_version(FilePath, URL)
 end
 
 function download_file(URL,FilePath)
-    if not(check_version(FilePath, URL)) then
+    FileVersion = check_version(FilePath, URL)
+    term.setTextColor(colors.lightGray)
+    term.write("GET "..FilePath)
+    term.setTextColor(colors.blue)
+    print((FileVersion ~= "" and " v"..FileVersion) or "")
+    if not(FileVersion) then
         if fs.exists(FilePath) then
             log("warning", "File "..FilePath.." already exists, deleting old file")
             fs.delete(FilePath)
@@ -198,11 +205,12 @@ function install_files()
     screen.clearLine(1,colors.gray)
     w,h = term.getSize()
     screen.drawText(math.floor((w - string.len(Path.." - "..Name.." "..Version))/2),1, Path.." - "..Name.." "..Version)
+    print("")
 
     myFiles = fs.open(Path..files.installation.files, "r")
     installation_files = textutils.unserialiseJSON(myFiles.readAll())
     myFiles.close()
-    
+
     for tableName, table in pairs(installation_files) do
         for FileName, FilePath in pairs(table) do
             download_file(repoURL..branch.."/"..FilePath, Path.."/"..FilePath)
