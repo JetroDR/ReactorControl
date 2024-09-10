@@ -59,9 +59,10 @@ function check_version(FilePath, URL)
                 fileVersion = fileVersion .. char
             end
             fileVersion = fileVersion:sub(1,#fileVersion-1)
-            log("debug", FilePath.." Version: "..fileVersion)
+            log("debug", "Local Version: "..fileVersion)
         else
-            fileVersion = fileContents
+            fileVersion = ""
+            File_Contents = fileContents
         end
     else
         fileVersion = "File not found"
@@ -76,28 +77,29 @@ function check_version(FilePath, URL)
             
         local _, numberChars = fileContents:lower():find('version = "')
         if numberChars then
-            gitHubVersion = ""
+            GithubVersion = ""
             local char = ""
 
             while char ~= '"' do
                 numberChars = numberChars + 1
                 char = fileContents:sub(numberChars,numberChars)
-                gitHubVersion = gitHubVersion .. char
+                GithubVersion = GithubVersion .. char
             end
-            gitHubVersion = gitHubVersion:sub(1,#gitHubVersion-1)
-            log("debug", URL.." Version: "..gitHubVersion)
+            GithubVersion = GithubVersion:sub(1,#GithubVersion-1)
+            log("debug", "GitHub Version: "..GithubVersion)
         else
-            gitHubVersion = fileContents
+            GithubVersion = ""
+            Github_Contents = fileContents
         end
     else
-        gitHubVersion = "File not found"
+        GithubVersion = "File not found"
     end
-    
-    if fileVersion == gitHubVersion then
+
+    if fileVersion == GithubVersion  or File_Contents == Github_Contents then
         log("debug", FilePath.." up to date")
         return fileVersion
     else
-        log("error", FilePath.." out of date, update required")
+        log("debug", FilePath.." out of date, update required")
         return false
     end
 end
@@ -122,9 +124,11 @@ function main()
     init_log()
     read_config()
     print("-- BOOTING "..Path.." v"..Version.." --")
-    for i = 1, #config.files.boot do
-        print("Checking "..Path..config.files.boot[i].file)
-        check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
+    if config.check_for_updates then
+        for i = 1, #config.files.boot do
+            print("Checking "..Path..config.files.boot[i].file)
+            check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
+        end
     end
     boot()
 end

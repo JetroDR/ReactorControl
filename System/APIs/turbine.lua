@@ -4,7 +4,7 @@ function getActive()
 end
 
 function getRotorSpeed()
-    local speed = 1767
+    local speed = 1767.8
     return speed
 end
 
@@ -14,7 +14,7 @@ function getInductorEngaged()
 end
 
 function getEnergyProducedLastTick()
-    local energy = 5760
+    local energy = 5760.2
     return energy
 end
 

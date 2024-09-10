@@ -76,7 +76,7 @@ function check_version(FilePath, URL)
                 fileVersion = fileVersion .. char
             end
             fileVersion = fileVersion:sub(1,#fileVersion-1)
-            log("debug", FilePath.." Version: "..fileVersion)
+            log("debug", "Local Version: "..fileVersion)
         else
             fileVersion = ""
             File_Contents = fileContents
@@ -103,7 +103,7 @@ function check_version(FilePath, URL)
                 GithubVersion = GithubVersion .. char
             end
             GithubVersion = GithubVersion:sub(1,#GithubVersion-1)
-            log("debug", URL.." Version: "..GithubVersion)
+            log("debug", "GitHub Version: "..GithubVersion)
         else
             GithubVersion = ""
             Github_Contents = fileContents

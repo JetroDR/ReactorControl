@@ -34,6 +34,7 @@ local page = {
         {name="battery", x=0, y=1},
         active = "home",
     },
+    turbine = 1,
 }
 
 --[[ TEMP PERIPHERAL FIX
@@ -109,9 +110,11 @@ end
 
 function init_data()
     for PageName, PageData in pairs(page) do
-        for i = 1, #PageData do
-            if PageData[i].x == 0 then
-                PageData[i].x = PageData[i-1].x + (string.len(PageData[i-1].name) + 2 + ((PageData[i-1].count and 4) or 2))
+        if PageName == "term" or PageName == "mon" then
+            for i = 1, #PageData do
+                if PageData[i].x == 0 then
+                    PageData[i].x = PageData[i-1].x + (string.len(PageData[i-1].name) + 2 + ((PageData[i-1].count and 4) or 2))
+                end
             end
         end
     end
@@ -125,7 +128,7 @@ function draw_menu()
     screen.clear(colors.blue)
     screen.clearLine(1, colors.lightBlue)
     for i = 1, #page.term do
-        screen.drawText(page.term[i].x, page.term[i].y, string.rep(" ", 2)..string.upper(page.term[i].name)..((page.term[i].count and " ("..page.term[i].count..")") or "")..string.rep(" ", (page.term[i].count and 0) or 2), ((page.term[i].count and page.term[i].count > 0) and colors.red) or (page.term[i].name == page.term.active and colors.blue) or colors.lightBlue)
+        screen.drawText(page.term[i].x, page.term[i].y, "  "..string.upper(page.term[i].name)..((page.term[i].count and " ("..page.term[i].count..")") or "  "), ((page.term[i].count and page.term[i].count > 0) and colors.red) or (page.term[i].name == page.term.active and colors.blue) or colors.lightBlue)
     end
     if page.term.active == "home" then
         screen.drawText(1,3,"STATE:", colors.blue)
@@ -154,10 +157,25 @@ function draw_menu()
     screen.clear(colors.blue)
     screen.clearLine(1, colors.lightBlue)
     for i = 1, #page.mon do
-        screen.drawText(page.mon[i].x, page.mon[i].y, string.rep(" ", 2)..string.upper(page.mon[i].name)..string.rep(" ", 2), (page.mon[i].name == page.mon.active and colors.blue) or colors.lightBlue)
+        screen.drawText(page.mon[i].x, page.mon[i].y, "  "..string.upper(page.mon[i].name).."  ", (page.mon[i].name == page.mon.active and colors.blue) or colors.lightBlue)
     end
-    
-    BatPercent = battery[1].getEnergyStored()/battery[1].getMaxEnergyStored()*100
+
+    local totalBattery = {
+        getEnergyStored = 0,
+        getMaxEnergyStored = 0,
+        getAverageChangePerTick = 0,
+        getAverageInputPerTick = 0,
+        getAverageOutputPerTick = 0,
+    }
+    for i = 1, #battery do
+        totalBattery.getEnergyStored = totalBattery.getEnergyStored + battery[i].getEnergyStored()
+        totalBattery.getMaxEnergyStored = totalBattery.getMaxEnergyStored + battery[i].getMaxEnergyStored()
+        totalBattery.getAverageChangePerTick = totalBattery.getAverageChangePerTick + battery[i].getAverageChangePerTick()
+        totalBattery.getAverageInputPerTick = totalBattery.getAverageInputPerTick + battery[i].getAverageInputPerTick()
+        totalBattery.getAverageOutputPerTick = totalBattery.getAverageOutputPerTick + battery[i].getAverageOutputPerTick()
+    end
+
+    BatPercent = totalBattery.getEnergyStored/totalBattery.getMaxEnergyStored*100
     if BatPercent >= 100 then
         x = 0
     elseif BatPercent >= 10 then
@@ -172,40 +190,56 @@ function draw_menu()
         --draw_image("stop", w-3-23, 14)
         screen.drawText(2,3, "AUTOMODE: ", colors.blue)
         draw_button(12,3, config.button.automode)
-        screen.drawText(2,5, "REACTOR: ", colors.blue)
-        x,y = term.getCursorPos()
-        screen.drawText(x,y, (reactor.getActive() and "Online") or "Offline", colors.blue, (reactor.getActive() and colors.lime) or colors.red)
+        screen.drawText(2,5, "\131\131", (reactor.getActive() and colors.lime) or colors.red, colors.blue)
+        screen.drawText(5,5, "REACTOR", colors.blue, colors.white)
+        screen.drawText(17,5, "\131\131", ((reactor.getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
+        screen.drawText(20,5, "STEAM", colors.blue, colors.white)
         for i = 1, #turbine do
-            screen.drawText(2, 6+i, tostring(i), colors.blue, colors.white)
-            screen.drawText(5, 6+i, ": TURBINE: ", colors.blue)
-            screen.drawText(16,6+i, ((not(turbine[i].getActive()) and "Offline") or (turbine[i].getActive() and "Online")),colors.blue,((not(turbine[i].getActive()) and colors.red) or (turbine[i].getActive() and colors.lime)))
-            screen.drawText(26,6+i, "COILS: ", colors.blue, colors.white)
-            screen.drawText(33,6+i, ((not(turbine[i].getInductorEngaged()) and "disengaged") or (turbine[i].getInductorEngaged() and "engaged")), colors.blue, ((not(turbine[i].getInductorEngaged()) and colors.red) or (turbine[i].getInductorEngaged() and colors.lime)))
-            --[[ OFF SCREEN
-            screen.drawText(45,6+i, "SPEED: "..math.floor(turbine[i].getRotorSpeed()), colors.blue, colors.white)
-            screen.drawText(58,6+i, "RPM")
-            screen.drawText(65,6+i, "ENERGY: "..math.floor(turbine[i].getEnergyProducedLastTick()), colors.blue)
-            screen.drawText(80,6+i, "RF/t")]]
+            screen.drawText(2,6+i, "\131\131", (turbine[i].getActive() and colors.lime) or colors.red, colors.blue)
+            screen.drawText(5,6+i, "TURBINE #"..tostring(i), colors.blue,colors.white)
+            screen.drawText(17,6+i, "\131\131", ((turbine[i].getRotorSpeed() >= 1700 and turbine[i].getRotorSpeed() <= 1850) and colors.lime) or colors.red, colors.blue)
+            screen.drawText(20,6+i, "SPEED", colors.blue, colors.white)
+            screen.drawText(28,6+i, "\131\131", (turbine[i].getInductorEngaged() and colors.yellow) or colors.red, colors.blue)
+            screen.drawText(31,6+i, "COILS", colors.blue, colors.white)
         end
     elseif page.mon.active == "reactor" then
-
+        screen.drawText(2,3, "\131\131", (reactor.getActive() and colors.lime) or colors.red, colors.blue)
+        screen.drawText(5,3, "REACTOR", colors.blue, colors.white)
+        screen.drawText(2,5, "\131\131", ((reactor.getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
+        screen.drawText(5,5, "STEAM"..string.rep(" ", 11).." mb/t", colors.blue, colors.white)
+        screen.drawText(15,5, (math.floor(reactor.getHotFluidProducedLastTick()*10)/10), colors.blue, colors.white)
+        screen.drawText(2,6, "\131\131", ((reactor.getFuelTemperature() <= 2000) and colors.lime) or colors.red, colors.blue)
+        screen.drawText(5,6, "T Fuel"..string.rep(" ", 10).." C", colors.blue, colors.white)
+        screen.drawText(15,6, (math.floor(reactor.getFuelTemperature()*10)/10), colors.blue, colors.white)
+        screen.drawText(2,7, "\131\131", ((reactor.getCasingTemperature() <= 2000) and colors.lime) or colors.red, colors.blue)
+        screen.drawText(5,7, "T Casing"..string.rep(" ", 8).." C", colors.blue, colors.white)
+        screen.drawText(15,7, (math.floor(reactor.getCasingTemperature()*10)/10), colors.blue, colors.white)
     elseif page.mon.active == "turbine" then
-
+        screen.drawText(2,3, "\131\131", (turbine[page.turbine].getActive() and colors.lime) or colors.red, colors.blue)
+        screen.drawText(5,3, "TURBINE \17"..((page.turbine < 10 and "0"..page.turbine) or page.turbine).."\16", colors.blue, colors.white)
+        screen.drawText(2,5, "\131\131", (turbine[page.turbine].getInductorEngaged() and colors.yellow) or colors.red, colors.blue)
+        screen.drawText(5,5, "COILS", colors.blue, colors.white)
+        screen.drawText(2,6, "\131\131", (turbine[page.turbine].getEnergyProducedLastTick() > 10 and colors.yellow) or colors.red, colors.blue)
+        screen.drawText(5,6, "ENERGY"..string.rep(" ", 10).." RF/t", colors.blue, colors.white)
+        screen.drawText(15,6, (math.floor(turbine[page.turbine].getEnergyProducedLastTick()*10)/10), colors.blue, colors.white)
+        screen.drawText(2,7, "\131\131", ((turbine[page.turbine].getRotorSpeed() >= 1700 and turbine[page.turbine].getRotorSpeed() <= 1850) and colors.lime) or colors.red, colors.blue)
+        screen.drawText(5,7, "SPEED"..string.rep(" ", 11).." RPM", colors.blue, colors.white)
+        screen.drawText(15,7, (math.floor(turbine[page.turbine].getRotorSpeed()*10)/10), colors.blue, colors.white)
     elseif page.mon.active == "battery" then
         draw_image("battery",2,4)
         screen.drawRect(4,5,math.floor(BatPercent/100*20),4,((BatPercent > 75 and colors.lime) or (BatPercent > 50 and colors.yellow) or (BatPercent > 20 and colors.orange) or colors.red),true,((BatPercent > 75 and colors.lime) or (BatPercent > 50 and colors.yellow) or (BatPercent > 20 and colors.orange) or colors.red))
         screen.drawText(5,11,"CHARGE: "..BatPercent.." %",colors.blue,colors.white)
-        screen.drawText(5,12,"STATE: "..((battery[1].getAverageChangePerTick() > 0 and "Charging") or (battery[1].getAverageChangePerTick() < 0 and "Discharging") or (battery[1].getAverageChangePerTick() == 0 and "Stable")),colors.blue,colors.white)
+        screen.drawText(5,12,"STATE: "..((totalBattery.getAverageChangePerTick > 0 and "Charging") or (totalBattery.getAverageChangePerTick < 0 and "Discharging") or (totalBattery.getAverageChangePerTick == 0 and "Stable")),colors.blue,colors.white)
         screen.drawText(32,6,"DELTA: ",colors.blue)
-        screen.drawText(39,6,(math.floor(battery[1].getAverageChangePerTick()*100)/100).." RF/t",colors.blue,(battery[1].getAverageChangePerTick() > 0 and colors.lime) or (battery[1].getAverageChangePerTick() < 0 and colors.red) or (battery[1].getAverageChangePerTick() == 0 and colors.white))
-        screen.drawText(32,4,"Input: "..(math.floor(battery[1].getAverageInputPerTick()*100)/100).." RF/t",colors.blue,colors.white)
-        screen.drawText(32,8,"Output: "..(math.floor(battery[1].getAverageOutputPerTick()*100)/100).." RF/t")
-        if battery[1].getAverageChangePerTick() >= 0 then
+        screen.drawText(39,6,(math.floor(totalBattery.getAverageChangePerTick*100)/100).." RF/t",colors.blue,(totalBattery.getAverageChangePerTick > 0 and colors.lime) or (totalBattery.getAverageChangePerTick < 0 and colors.red) or (totalBattery.getAverageChangePerTick == 0 and colors.white))
+        screen.drawText(32,4,"Input: "..(math.floor(totalBattery.getAverageInputPerTick*100)/100).." RF/t",colors.blue,colors.white)
+        screen.drawText(32,8,"Output: "..(math.floor(totalBattery.getAverageOutputPerTick*100)/100).." RF/t")
+        if totalBattery.getAverageChangePerTick >= 0 then
             ChargeType = "Full: "
-            ChargeTime = (math.floor(10*math.abs((battery[1].getMaxEnergyStored()-battery[1].getEnergyStored())/battery[1].getAverageChangePerTick()/20)))/10
+            ChargeTime = (math.floor(10*math.abs((totalBattery.getMaxEnergyStored-totalBattery.getEnergyStored)/totalBattery.getAverageChangePerTick/20)))/10
         else
             ChargeType = "Empty: "
-            ChargeTime = (math.floor(10*math.abs(battery[1].getEnergyStored()/battery[1].getAverageChangePerTick()/20)))/10
+            ChargeTime = (math.floor(10*math.abs(totalBattery.getEnergyStored/totalBattery.getAverageChangePerTick/20)))/10
         end
         ChargeHours = math.floor(ChargeTime/3600)
         ChargeMinutes = math.floor((ChargeTime-ChargeHours*3600)/60)
@@ -239,10 +273,8 @@ function draw_button(x,y, boolean)
         term.setCursorPos(x+3,y)
         term.setBackgroundColor(colors.gray)
         term.write(" ")
-
     end
 end
-
 
 function touch()
     --event, a, b, c = os.pullEvent()
@@ -279,7 +311,15 @@ function touch()
         elseif page.mon.active == "reactor" then
 
         elseif page.mon.active == "turbine" then
-
+            if x == 13 and y == 3 then
+                if page.turbine > 1 then
+                    page.turbine = page.turbine - 1
+                end
+            elseif x == 16 and y == 3 then
+                if page.turbine < #turbine then
+                    page.turbine = page.turbine + 1
+                end
+            end
         elseif page.mon.active == "battery" then
             if x>= 23 and x <= 26 and y == 15 then 
                 if config.button.adaptive_battery then
@@ -306,7 +346,7 @@ function touch()
             if x >= 4 and x <= w-3 and y == h-9 then
                 term.setCursorPos(4,h-8)
                 input = {""}
-                while string.lower(input[1]) ~= "return" and not(input[2]) do
+                while input[1] ~= "return" and not(input[2]) do
                     draw_menu()
                     term.setCursorPos(4,h-9)
                     input = read()
@@ -315,14 +355,21 @@ function touch()
                     for i = 1, #input do
                         if tonumber(input[i]) then
                             input[i] = tonumber(input[i])
+                        elseif string.lower(input[i]) == "true" then
+                            input[i] = true
+                        elseif string.lower(input[i]) == "false" then
+                            input[i] = false
+                        else
+                            input[i] = string.lower(input[i])
                         end
                     end
-                    if string.lower(input[1]) == "return" then
+
+                    if input[1] == "return" then
                         feedback = ""
                         break
-                    elseif string.lower(input[1]) == "reactor_coolant_side" then
+                    elseif input[1] == "reactor_coolant_side" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.reactor.coolant_side.."%"
                             elseif input[2] and type(input[2]) ~= "number" then
                                 for _, side in pairs({"left", "right", "front", "back", "top", "bottom"}) do
@@ -341,9 +388,9 @@ function touch()
                         else
                             feedback = "Usage: reactor_coolant_side <side>"
                         end
-                    elseif string.lower(input[1]) == "battery_high" then
+                    elseif input[1] == "battery_high" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.settings.battery_high.."%"
                             elseif input[2] then
                                 if input[2] and type(input[2]) == "number" then
@@ -365,9 +412,9 @@ function touch()
                         else
                             feedback = "Usage: battery_high <0-100>"
                         end
-                    elseif string.lower(input[1]) == "battery_high_adaptive" then
+                    elseif input[1] == "battery_high_adaptive" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.settings.battery_high_adaptive.."%"
                             elseif input[2] then
                                 if input[2] and type(input[2]) == "number" then
@@ -385,9 +432,9 @@ function touch()
                         else
                             feedback = "Usage: battery_high_adaptive <0-100> [in minutes]"
                         end
-                    elseif string.lower(input[1]) == "battery_low" then
+                    elseif input[1] == "battery_low" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.settings.battery_low.."%"
                             else
                                 if input[2] and type(input[2]) == "number" then
@@ -409,9 +456,9 @@ function touch()
                         else
                             feedback = "Usage: battery_low <0-100>"
                         end
-                    elseif string.lower(input[1]) == "battery_low_adaptive" then
+                    elseif input[1] == "battery_low_adaptive" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.settings.battery_low_adaptive.."%"
                             else
                                 if input[2] and type(input[2]) == "number" then
@@ -429,9 +476,9 @@ function touch()
                         else
                             feedback = "Usage: battery_low_adaptive <0-100> [in minutes]"
                         end
-                    elseif string.lower(input[1]) == "inductor_engage_high" then
+                    elseif input[1] == "inductor_engage_high" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.settings.inductor_engage_high.."%"
                             elseif input[2] then
                                 if input[2] and type(input[2]) == "number" then
@@ -453,9 +500,9 @@ function touch()
                         else
                             feedback = "Usage: inductor_engage_high <0-1800>"
                         end
-                    elseif string.lower(input[1]) == "inductor_engage_low" then
+                    elseif input[1] == "inductor_engage_low" then
                         if input[2] then
-                            if string.lower(input[2]) == "get" then
+                            if input[2] == "get" then
                                 feedback = "Value at "..config.settings.inductor_engage_low.."%"
                             elseif input[2] then
                                 if input[2] and type(input[2]) == "number" then
@@ -476,6 +523,22 @@ function touch()
                             end
                         else
                             feedback = "Usage: inductor_engage_low <0-1800>"
+                        end
+                    elseif input[1] == "check_for_updates" then
+                        if input[2] ~= nil then
+                            if input[2] == "get" then
+                                feedback = "Checking for updates "..((config.settings.check_for_updates and "enabled") or "disabled")
+                            else
+                                if input[2] ~= nil and type(input[2]) == "boolean" then
+                                    config.settings.check_for_updates = input[2]
+                                    feedback = "Changed "..input[1].." to "..tostring(input[2])
+                                    write_config()
+                                else
+                                    feedback = "parameter must be a boolean"
+                                end
+                            end
+                        else
+                            feedback = "Usage: check_for_updates <true-false>"
                         end
                     else
                         feedback = "Unknown command "..input[1]
@@ -514,7 +577,6 @@ function main()
         page.term[4].count = #config.errors
         draw_menu()
         touch()
-        sleep(.1)
     end
 end
 
