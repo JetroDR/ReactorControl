@@ -167,6 +167,7 @@ function draw_menu()
         getAverageInputPerTick = 0,
         getAverageOutputPerTick = 0,
     }
+
     for i = 1, #battery do
         totalBattery.getEnergyStored = totalBattery.getEnergyStored + battery[i].getEnergyStored()
         totalBattery.getMaxEnergyStored = totalBattery.getMaxEnergyStored + battery[i].getMaxEnergyStored()
@@ -192,16 +193,21 @@ function draw_menu()
         draw_button(12,3, config.button.automode)
         screen.drawText(2,5, "\131\131", (reactor.getActive() and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,5, "REACTOR", colors.blue, colors.white)
-        screen.drawText(17,5, "\131\131", ((reactor.getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
-        screen.drawText(20,5, "STEAM", colors.blue, colors.white)
+        screen.drawText(18,5, "\131\131", ((reactor.getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
+        screen.drawText(21,5, "STEAM", colors.blue, colors.white)
         for i = 1, #turbine do
             screen.drawText(2,6+i, "\131\131", (turbine[i].getActive() and colors.lime) or colors.red, colors.blue)
             screen.drawText(5,6+i, "TURBINE #"..tostring(i), colors.blue,colors.white)
-            screen.drawText(17,6+i, "\131\131", ((turbine[i].getRotorSpeed() >= 1700 and turbine[i].getRotorSpeed() <= 1850) and colors.lime) or colors.red, colors.blue)
-            screen.drawText(20,6+i, "SPEED", colors.blue, colors.white)
-            screen.drawText(28,6+i, "\131\131", (turbine[i].getInductorEngaged() and colors.yellow) or colors.red, colors.blue)
-            screen.drawText(31,6+i, "COILS", colors.blue, colors.white)
+            screen.drawText(18,6+i, "\131\131", ((turbine[i].getRotorSpeed() >= 1700 and turbine[i].getRotorSpeed() <= 1850) and colors.lime) or colors.red, colors.blue)
+            screen.drawText(21,6+i, "SPEED", colors.blue, colors.white)
+            screen.drawText(30,6+i, "\131\131", (turbine[i].getInductorEngaged() and colors.yellow) or colors.red, colors.blue)
+            screen.drawText(33,6+i, "COILS", colors.blue, colors.white)
         end
+        x,y = term.getCursorPos()
+        screen.drawText(2,y+2, "\131\131", ((BatPercent > 75 and colors.lime) or (BatPercent > 50 and colors.yellow) or (BatPercent > 20 and colors.orange) or colors.red), colors.blue)
+        screen.drawText(5,y+2, "BATTERY "..math.floor(BatPercent).."%", colors.blue, colors.white)
+        screen.drawText(18,y+2, "\131\131", (totalBattery.getAverageChangePerTick > 0 and colors.lime) or (totalBattery.getAverageChangePerTick < 0 and colors.red) or colors.yellow, colors.blue)
+        screen.drawText(21,y+2, (totalBattery.getAverageChangePerTick > 0 and "Charging") or (totalBattery.getAverageChangePerTick < 0 and "Discharging") or "Steady", colors.blue, colors.white)
     elseif page.mon.active == "reactor" then
         screen.drawText(2,3, "\131\131", (reactor.getActive() and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,3, "REACTOR", colors.blue, colors.white)

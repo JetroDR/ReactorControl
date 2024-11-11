@@ -21,7 +21,7 @@ function init_log()
 end
 
 function log(type, text)
-    if (type == "debug" and config.debug) or type ~= "debug" then
+    if (type == "debug" and config.settings.debug) or type ~= "debug" then
         myLog = fs.open(files.log, "a")
         myLog.write("["..Name.."] ["..string.upper(type).."] ["..os.date("%d-%m-%Y %X").."] "..text.."\n")
         myLog.close()
@@ -124,7 +124,7 @@ function main()
     init_log()
     read_config()
     print("-- BOOTING "..Path.." v"..Version.." --")
-    if config.check_for_updates then
+    if config.settings.check_for_updates then
         for i = 1, #config.files.boot do
             print("Checking "..Path..config.files.boot[i].file)
             check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
