@@ -1,5 +1,5 @@
 Name = "Display.lua"
-Version = "0.2.0"
+Version = "0.2.1"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -373,181 +373,79 @@ function touch()
                     if input[1] == "return" then
                         feedback = ""
                         break
-                    elseif input[1] == "reactor_coolant_side" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.reactor.coolant_side.."%"
-                            elseif input[2] and type(input[2]) ~= "number" then
-                                for _, side in pairs({"left", "right", "front", "back", "top", "bottom"}) do
-                                    if input[2] == side then
-                                        input_side = input[2]
-                                    end
-                                    if input_side then
-                                        config.reactor.coolant_side = input[2]
-                                        feedback = "Changed "..input[1].." to "..input[2]
-                                        write_config()
-                                    else
-                                        feedback = "Incorrect side"
-                                    end
-                                end
-                            end
-                        else
-                            feedback = "Usage: reactor_coolant_side <side>"
-                        end
-                    elseif input[1] == "battery_high" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.settings.battery_high.."%"
-                            elseif input[2] then
-                                if input[2] and type(input[2]) == "number" then
-                                    if input[2] >= 0 and input[2] <= 100 then
-                                        if input[2] > config.settings.battery_low then
-                                            config.settings.battery_high = input[2]
-                                            feedback = "Changed "..input[1].." to "..input[2]
-                                            write_config()
-                                        else
-                                            feedback = "parameter must be higher then battery_low"
-                                        end
-                                    else
-                                        feedback = "parameter must be a number between 0 and 100"
-                                    end
-                                else
-                                    feedback = "parameter must be a number"
-                                end
-                            end
-                        else
-                            feedback = "Usage: battery_high <0-100>"
-                        end
-                    elseif input[1] == "battery_high_adaptive" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.settings.battery_high_adaptive.."%"
-                            elseif input[2] then
-                                if input[2] and type(input[2]) == "number" then
-                                    if input[2] >= 0 and input[2] <= 120 then
-                                        config.settings.battery_high_adaptive = input[2]
-                                        feedback = "Changed "..input[1].." to "..input[2]
-                                        write_config()
-                                    else
-                                        feedback = "parameter must be a number between 0 and 100"
-                                    end
-                                else
-                                    feedback = "parameter must be a number"
-                                end
-                            end
-                        else
-                            feedback = "Usage: battery_high_adaptive <0-100> [in minutes]"
-                        end
-                    elseif input[1] == "battery_low" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.settings.battery_low.."%"
-                            else
-                                if input[2] and type(input[2]) == "number" then
-                                    if input[2] >= 0 and input[2] <= 100 then
-                                        if input[2] < config.settings.battery_high then
-                                            config.settings.battery_low = input[2]
-                                            feedback = "Changed "..input[1].." to "..input[2]
-                                            write_config()
-                                        else
-                                            feedback = "parameter must be lower then battery_high"
-                                        end
-                                    else
-                                        feedback = "parameter must be a number between 0 and 100"
-                                    end
-                                else
-                                    feedback = "parameter must be a number"
-                                end
-                            end
-                        else
-                            feedback = "Usage: battery_low <0-100>"
-                        end
-                    elseif input[1] == "battery_low_adaptive" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.settings.battery_low_adaptive.."%"
-                            else
-                                if input[2] and type(input[2]) == "number" then
-                                    if input[2] >= 0 and input[2] <= 100 then
-                                        config.settings.battery_low_adaptive = input[2]
-                                        feedback = "Changed "..input[1].." to "..input[2]
-                                        write_config()
-                                    else
-                                        feedback = "parameter must be a number between 0 and 100"
-                                    end
-                                else
-                                    feedback = "parameter must be a number"
-                                end
-                            end
-                        else
-                            feedback = "Usage: battery_low_adaptive <0-100> [in minutes]"
-                        end
-                    elseif input[1] == "inductor_engage_high" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.settings.inductor_engage_high.."%"
-                            elseif input[2] then
-                                if input[2] and type(input[2]) == "number" then
-                                    if input[2] >= 0 and input[2] <= 1800 then
-                                        if input[2] > config.settings.inductor_engage_low then
-                                            config.settings.inductor_engage_high = input[2]
-                                            feedback = "Changed "..input[1].." to "..input[2]
-                                            write_config()
-                                        else
-                                            feedback = "parameter must be higher then inductor_engage_low"
-                                        end
-                                    else
-                                        feedback = "parameter must be a number between 0 and 1800"
-                                    end
-                                else
-                                    feedback = "parameter must be a number"
-                                end
-                            end
-                        else
-                            feedback = "Usage: inductor_engage_high <0-1800>"
-                        end
-                    elseif input[1] == "inductor_engage_low" then
-                        if input[2] then
-                            if input[2] == "get" then
-                                feedback = "Value at "..config.settings.inductor_engage_low.."%"
-                            elseif input[2] then
-                                if input[2] and type(input[2]) == "number" then
-                                    if input[2] >= 0 and input[2] <= 1800 then
-                                        if input[2] < config.settings.inductor_engage_high then
-                                            config.settings.inductor_engage_low = input[2]
-                                            feedback = "Changed "..input[1].." to "..input[2]
-                                            write_config()
-                                        else
-                                            feedback = "parameter must be higher then inductor_engage_high"
-                                        end
-                                    else
-                                        feedback = "parameter must be a number between 0 and 1800"
-                                    end
-                                else
-                                    feedback = "parameter must be a number"
-                                end
-                            end
-                        else
-                            feedback = "Usage: inductor_engage_low <0-1800>"
-                        end
-                    elseif input[1] == "check_for_updates" then
-                        if input[2] ~= nil then
-                            if input[2] == "get" then
-                                feedback = "Checking for updates "..((config.settings.check_for_updates and "enabled") or "disabled")
-                            else
-                                if input[2] ~= nil and type(input[2]) == "boolean" then
-                                    config.settings.check_for_updates = input[2]
-                                    feedback = "Changed "..input[1].." to "..tostring(input[2])
-                                    write_config()
-                                else
-                                    feedback = "parameter must be a boolean"
-                                end
-                            end
-                        else
-                            feedback = "Usage: check_for_updates <true-false>"
-                        end
                     else
-                        feedback = "Unknown command "..input[1]
+                        local found = false
+                        for setting, data in pairs(config.settings) do
+                            if setting == input[1] then
+                                found = true
+                                if data.type == "number" then
+                                    if type(data.min) == "string" then
+                                        min = config.settings[data.min].value
+                                    else
+                                        min = data.min
+                                    end
+                                    if type(data.max) == "string" then
+                                        max = config.settings[data.max].value
+                                    else
+                                        max = data.max
+                                    end
+                                    if input[2] then
+                                        if input[2] == "get" then
+                                            feedback = input[1].." at "..data.value
+                                        elseif input[2] then
+                                            if input[2] and type(input[2]) == "number" then
+                                                if input[2] >= min and input[2] <= max then
+                                                    config.settings[input[1]].value = input[2]
+                                                    feedback = "Changed "..input[1].." to "..input[2]
+                                                    write_config()
+                                                else
+                                                    feedback = "parameter must be a number between "..min.." and "..max
+                                                end
+                                            else
+                                                feedback = "parameter must be a number"
+                                            end
+                                        end
+                                    else
+                                        feedback = "Usage: "..input[1].." <"..min.."-"..max..">"
+                                    end
+                                elseif data.type == "bool" then
+                                    if input[2] ~= nil then
+                                        if input[2] == "get" then
+                                            feedback = input[1].." at "..tostring(data.value)
+                                        else
+                                            if input[2] ~= nil and type(input[2]) == "boolean" then
+                                                config.settings[input[1]].value = input[2]
+                                                feedback = "Changed "..input[1].." to "..tostring(input[2])
+                                                write_config()
+                                            else
+                                                feedback = "parameter must be a true or false"
+                                            end
+                                        end
+                                    else
+                                        feedback = "Usage: "..input[1].." <true-false>"
+                                    end
+                                elseif data.type == "side" then
+                                    if input[2] then
+                                        if input[2] == "get" then
+                                            feedback = input[1].." at "..data.value
+                                        elseif input[2] then
+                                            if input[2] and (input[2] == "top" or input[2] == "bottom" or input[2] == "front" or input[2] == "back" or input[2] == "left" or input[2] == "right") then
+                                                config.settings[input[1]].value = input[2]
+                                                feedback = "Changed "..input[1].." to "..input[2]
+                                                write_config()
+                                            else
+                                                feedback = "parameter must be a side"
+                                            end
+                                        end
+                                    else
+                                        feedback = "Usage: "..input[1].." <top-bottom-front-back-left-right>"
+                                    end
+                                end
+                            end
+                        end
+                        if not(found) then
+                            feedback = "Unknown command "..input[1]
+                        end
                     end
                     screen.drawText(4,h-5, feedback)
                     if feedback ~= "" then
