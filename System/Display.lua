@@ -1,5 +1,5 @@
 Name = "Display.lua"
-Version = "0.2.1"
+Version = "0.2.2"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -37,21 +37,23 @@ local page = {
     turbine = 1,
 }
 
---[[ TEMP PERIPHERAL FIX
-local reactor = {}
-local turbine = {}
-local battery = {}
-]]
+standalone_peripheral = true
+if not(standalone_peripheral) then
+    local reactor = {}
+    local turbine = {}
+    local battery = {}
+end
+
 
 function log(type, text)
-    if (type == "debug" and config.debug) or type ~= "debug" then
+    if (type == "debug" and config.settings.debug.value) or type ~= "debug" then
         myLog = fs.open(files.log, "a")
         myLog.write("["..Name.."] ["..string.upper(type).."] ["..os.date("%d-%m-%Y %X").."] "..text.."\n")
         myLog.close()
         if type == "warning" then
             table.insert(config.warnings, text)
             write_config()
-        elseif type == "error" and config.debug then 
+        elseif type == "error" then 
             table.insert(config.errors, text)
             write_config()
             error(text)
@@ -82,15 +84,23 @@ end
 
 function init_apis()
     for APIname, APIpath in pairs(config.files.apis) do
-        if fs.exists(Path..APIpath) then
-            succes = os.loadAPI(Path..APIpath)
-            if succes then
-                log("info", "Loaded "..APIname.." API")
+        -- TEMP peripheral fix
+        loadAPI = true
+        if APIname == "reactor" or APIname == "turbine" or APIname == "battery" then
+            loadAPI = standalone_peripheral
+        end
+
+        if loadAPI then
+            if fs.exists(Path..APIpath) then
+                succes = os.loadAPI(Path..APIpath)
+                if succes then
+                    log("info", "Loaded "..APIname.." API")
+                else
+                    log("error", "Unable to load "..APIname.." API")
+                end
             else
-                log("error", "Unable to load "..APIname.." API")
+                log("error", "Unable to load "..APIname.." API due to file not found")
             end
-        else
-            log("error", "Unable to load "..APIname.." API due to file not found")
         end
     end
 end
@@ -104,7 +114,32 @@ function init_peripherals()
             mon = peripheral.wrap(PList[i])
         elseif peripheral.getType(PList[i]) == "modem" then
             rednet.open(PList[i])
+        elseif peripheral.getType(PList[i]) == "BigReactors-Reactor" then
+            table.insert(reactor,peripheral.wrap(PList[i]))
+        elseif peripheral.getType(PList[i]) == "BigReactors-Turbine" then
+            table.insert(turbine,peripheral.wrap(PList[i]))
+        elseif peripheral.getType(PList[i]) == "capacitor_bank" then
+            table.insert(battery,peripheral.wrap(PList[i]))
         end
+    end
+
+    if standalone_peripheral then
+        -- TEMP PERIPHERAL FIX
+        local temp = reactor
+        reactor = {}
+        table.insert(reactor, temp)
+
+        local temp = turbine
+        turbine = {}
+        table.insert(turbine, temp)
+
+        local temp = battery
+        battery = {}
+        table.insert(battery, temp)
+    end
+
+    if #reactor > config.peripheral.limits.reactor then
+        log("error", Version.." only supports "..config.peripheral.limits.reactor.." reactors")
     end
 end
 
@@ -185,15 +220,15 @@ function draw_menu()
         x = 2
     end
     BatPercent = math.floor(BatPercent*(10^x))/(10^x)
-    
+
     if page.mon.active == "home" then
         --draw_image("start", w-3-23, 4)
         --draw_image("stop", w-3-23, 14)
         screen.drawText(2,3, "AUTOMODE: ", colors.blue)
         draw_button(12,3, config.button.automode)
-        screen.drawText(2,5, "\131\131", (reactor.getActive() and colors.lime) or colors.red, colors.blue)
+        screen.drawText(2,5, "\131\131", (reactor[1].getActive() and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,5, "REACTOR", colors.blue, colors.white)
-        screen.drawText(18,5, "\131\131", ((reactor.getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
+        screen.drawText(18,5, "\131\131", ((reactor[1].getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
         screen.drawText(21,5, "STEAM", colors.blue, colors.white)
         for i = 1, #turbine do
             screen.drawText(2,6+i, "\131\131", (turbine[i].getActive() and colors.lime) or colors.red, colors.blue)
@@ -209,17 +244,17 @@ function draw_menu()
         screen.drawText(18,y+2, "\131\131", (totalBattery.getAverageChangePerTick > 0 and colors.lime) or (totalBattery.getAverageChangePerTick < 0 and colors.red) or colors.yellow, colors.blue)
         screen.drawText(21,y+2, (totalBattery.getAverageChangePerTick > 0 and "Charging") or (totalBattery.getAverageChangePerTick < 0 and "Discharging") or "Steady", colors.blue, colors.white)
     elseif page.mon.active == "reactor" then
-        screen.drawText(2,3, "\131\131", (reactor.getActive() and colors.lime) or colors.red, colors.blue)
+        screen.drawText(2,3, "\131\131", (reactor[1].getActive() and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,3, "REACTOR", colors.blue, colors.white)
-        screen.drawText(2,5, "\131\131", ((reactor.getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
+        screen.drawText(2,5, "\131\131", ((reactor[1].getHotFluidProducedLastTick() >= #turbine*2000) and colors.lightBlue) or colors.red, colors.blue)
         screen.drawText(5,5, "STEAM"..string.rep(" ", 11).." mb/t", colors.blue, colors.white)
-        screen.drawText(15,5, (math.floor(reactor.getHotFluidProducedLastTick()*10)/10), colors.blue, colors.white)
-        screen.drawText(2,6, "\131\131", ((reactor.getFuelTemperature() <= 2000) and colors.lime) or colors.red, colors.blue)
+        screen.drawText(15,5, (math.floor(reactor[1].getHotFluidProducedLastTick()*10)/10), colors.blue, colors.white)
+        screen.drawText(2,6, "\131\131", ((reactor[1].getFuelTemperature() <= 2000) and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,6, "T Fuel"..string.rep(" ", 10).." C", colors.blue, colors.white)
-        screen.drawText(15,6, (math.floor(reactor.getFuelTemperature()*10)/10), colors.blue, colors.white)
-        screen.drawText(2,7, "\131\131", ((reactor.getCasingTemperature() <= 2000) and colors.lime) or colors.red, colors.blue)
+        screen.drawText(15,6, (math.floor(reactor[1].getFuelTemperature()*10)/10), colors.blue, colors.white)
+        screen.drawText(2,7, "\131\131", ((reactor[1].getCasingTemperature() <= 2000) and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,7, "T Casing"..string.rep(" ", 8).." C", colors.blue, colors.white)
-        screen.drawText(15,7, (math.floor(reactor.getCasingTemperature()*10)/10), colors.blue, colors.white)
+        screen.drawText(15,7, (math.floor(reactor[1].getCasingTemperature()*10)/10), colors.blue, colors.white)
     elseif page.mon.active == "turbine" then
         screen.drawText(2,3, "\131\131", (turbine[page.turbine].getActive() and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,3, "TURBINE \17"..((page.turbine < 10 and "0"..page.turbine) or page.turbine).."\16", colors.blue, colors.white)
@@ -466,14 +501,6 @@ function main()
     init_apis()
     init_peripherals()
     init_data()
-    -- TEMP PERIPHERAL FIX
-    local temp = turbine
-    turbine = {}
-    table.insert(turbine, temp)
-
-    local temp = battery
-    battery = {}
-    table.insert(battery, temp)
     
     while true do
         read_config()

@@ -9,11 +9,16 @@ local files = {
 }
 
 function log(type, text)
-    if (type == "debug" and config.debug) or type ~= "debug" then
+    if (type == "debug" and config.settings.debug.value) or type ~= "debug" then
         myLog = fs.open(files.log, "a")
         myLog.write("["..Name.."] ["..string.upper(type).."] ["..os.date("%d-%m-%Y %X").."] "..text.."\n")
         myLog.close()
-        if type == "error" then 
+        if type == "warning" then
+            table.insert(config.warnings, text)
+            write_config()
+        elseif type == "error" then 
+            table.insert(config.errors, text)
+            write_config()
             error(text)
         end
     end
@@ -29,4 +34,11 @@ function read_config()
     end
 end
 
-print(Name)
+function main()
+    read_config()
+    --init_apis()
+    --init_peripherals()
+    log("debug", Name)
+end
+
+main()

@@ -1,5 +1,5 @@
 Name = "startup.lua"
-Version = "0.2.1"
+Version = "0.2.2"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -25,7 +25,12 @@ function log(type, text)
         myLog = fs.open(files.log, "a")
         myLog.write("["..Name.."] ["..string.upper(type).."] ["..os.date("%d-%m-%Y %X").."] "..text.."\n")
         myLog.close()
-        if type == "error" then 
+        if type == "warning" then
+            table.insert(config.warnings, text)
+            write_config()
+        elseif type == "error" then 
+            table.insert(config.errors, text)
+            write_config()
             error(text)
         end
     end
