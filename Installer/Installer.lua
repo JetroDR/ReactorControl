@@ -1,5 +1,5 @@
 Name = "Installer.lua"
-Version = "0.4.0"
+Version = "0.4.1"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -60,8 +60,10 @@ end
 
 function check_version(FilePath, URL)
     log("debug", "checking "..FilePath)
+    File_Contents = ""
     if fs.exists(FilePath) then
         myFile = fs.open(FilePath, "r")
+        fileContents = ""
         fileContents = myFile.readAll()
         myFile.close()
 
@@ -89,6 +91,7 @@ function check_version(FilePath, URL)
         
     if http.checkURL(URL) then
         myGithub = http.get(URL)
+        fileContents = ""
         fileContents = myGithub.readAll()
         myGithub.close()
             
@@ -111,13 +114,17 @@ function check_version(FilePath, URL)
     else
         GithubVersion = "File not found"
     end
-
-    if fileVersion == GithubVersion  or File_Contents == Github_Contents then
-        log("debug", FilePath.." up to date")
+    if fileVersion == GithubVersion then
+        log("info", FilePath.." up to date "..fileVersion)
         return fileVersion
     else
-        log("debug", FilePath.." out of date, update required")
-        return false
+        if File_Contents == Github_Contents then
+            log("info", FilePath.." up to date "..File_Contents)
+            return fileVersion
+        else
+            log("debug", FilePath.." out of date, update required")
+            return false
+        end
     end
 end
 
@@ -126,7 +133,7 @@ function download_file(URL,FilePath)
     term.setTextColor(colors.lightGray)
     term.write("GET "..FilePath)
     term.setTextColor(colors.blue)
-    print((FileVersion ~= "" and " v"..FileVersion) or "")
+    print((FileVersion == false and "") or (FileVersion ~= "" and " v"..FileVersion) or "")
     if not(FileVersion) then
         if fs.exists(FilePath) then
             log("warning", "File "..FilePath.." already exists, deleting old file")

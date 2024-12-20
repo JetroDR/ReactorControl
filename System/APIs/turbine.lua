@@ -4,7 +4,7 @@ function getActive()
 end
 
 function getRotorSpeed()
-    local speed = 1767.8
+    local speed = 1817.8
     return speed
 end
 

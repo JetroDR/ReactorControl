@@ -23,10 +23,16 @@ function getControlRodLevel()
     return rod
 end
 
+function getCoolantAmount()
+    local coolant = 11000
+    return coolant
+end
+
 return {
     getActive = getActive,
     getHotFluidProducedLastTick = getHotFluidProducedLastTick,
     getFuelTemperature = getFuelTemperature,
     getCasingTemperature = getCasingTemperature,
     getControlRodLevel = getControlRodLevel,
+    getCoolantAmount = getCoolantAmount,
 }

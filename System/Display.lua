@@ -1,5 +1,5 @@
 Name = "Display.lua"
-Version = "0.2.2"
+Version = "0.2.3"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -35,6 +35,8 @@ local page = {
         active = "home",
     },
     turbine = 1,
+    warnings = 1,
+    errors = 1,
 }
 
 standalone_peripheral = true
@@ -140,6 +142,10 @@ function init_peripherals()
 
     if #reactor > config.peripheral.limits.reactor then
         log("error", Version.." only supports "..config.peripheral.limits.reactor.." reactors")
+    elseif #turbine > config.peripheral.limits.turbine then
+        log("error", Version.." only supports "..config.peripheral.limits.turbine.." turbines")
+    elseif #battery > config.peripheral.limits.battery then
+        log("error", Version.." only supports "..config.peripheral.limits.battery.." batteries")
     end
 end
 
@@ -177,9 +183,27 @@ function draw_menu()
         screen.drawText(4,h-5,"FEEDBACK",colors.blue)
         screen.drawRect(4,h-4,w-6,1,colors.gray)
     elseif page.term.active == "warnings" then
-
+        screen.drawText(1,3,"Warnings:", colors.blue)
+        screen.drawRect(4,5,w-6,h-6,colors.gray, true, colors.gray)
+        screen.drawText(4,5,"Page: "..page.warnings.."/"..math.ceil(#config.warnings/(h-7)))
+        screen.drawText(w-9,5,"[<] [>]")
+        for i = 1, #config.warnings do
+            if i >= 1+(page.warnings-1)*(h-7) and i <= (h-7)+(page.warnings-1)*(h-7) then
+                screen.drawText(4,6+((i-1)%(h-7)), config.warnings[i])
+                screen.drawText(w-5,6+((i-1)%(h-7)), "[x]")
+            end
+        end
     elseif page.term.active == "errors" then
-
+        screen.drawText(1,3,"Errors:", colors.blue)
+        screen.drawRect(4,5,w-6,h-6,colors.gray, true, colors.gray)
+        screen.drawText(4,5,"Page: "..page.errors.."/"..math.ceil(#config.errors/(h-7)))
+        screen.drawText(w-9,5,"[<] [>]")
+        for i = 1, #config.errors do
+            if i >= 1+(page.errors-1)*(h-7) and i <= (h-7)+(page.errors-1)*(h-7) then
+                screen.drawText(4,6+((i-1)%(h-7)), config.errors[i])
+                screen.drawText(w-5,6+((i-1)%(h-7)), "[x]")
+            end
+        end
     end
 
     -- switch to monitor 1
@@ -489,9 +513,39 @@ function touch()
                 end
             end
         elseif page.term.active == "warnings" then
-        
+            if x >= w-9 and x <= w-7 and y == 5 then
+                if page.warnings > 1 then
+                    page.warnings = page.warnings - 1
+                end
+            elseif x >= w-5 and x <= w-3 and y == 5 then
+                if page.warnings < math.ceil(#config.warnings/(h-7)) then
+                    page.warnings = page.warnings + 1
+                end
+            end
+            for i = 1, (h-7)-1 do
+                if x >= w-5 and x <= w-3 and y == 5+i%(h-7) then
+                    log("info","OK"..i+((page.warnings-1)*(h-7))-(page.warnings-1))
+                    table.remove(config.warnings,i+((page.warnings-1)*(h-7))-(page.warnings-1))
+                    write_config()
+                end
+            end
         elseif page.term.active == "errors" then
-
+            if x >= w-9 and x <= w-7 and y == 5 then
+                if page.errors > 1 then
+                    page.errors = page.errors - 1
+                end
+            elseif x >= w-5 and x <= w-3 and y == 5 then
+                if page.errors < math.ceil(#config.errors/(h-7)) then
+                    page.errors = page.errors + 1
+                end
+            end
+            for i = 1, (h-7)-1 do
+                if x >= w-5 and x <= w-3 and y == 5+i%(h-7) then
+                    log("info","OK"..i+((page.errors-1)*(h-7))-(page.errors-1))
+                    table.remove(config.errors,i+((page.errors-1)*(h-7))-(page.errors-1))
+                    write_config()
+                end
+            end
         end
     end
 end
