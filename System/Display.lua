@@ -154,7 +154,7 @@ function init_data()
         if PageName == "term" or PageName == "mon" then
             for i = 1, #PageData do
                 if PageData[i].x == 0 then
-                    PageData[i].x = PageData[i-1].x + (string.len(PageData[i-1].name) + 2 + ((PageData[i-1].count and 4) or 2))
+                    PageData[i].x = PageData[i-1].x + (string.len(PageData[i-1].name) + 2 + ((PageData[i-1].count and 6) or 2))
                 end
             end
         end
@@ -169,10 +169,10 @@ function draw_menu()
     screen.clear(colors.blue)
     screen.clearLine(1, colors.lightBlue)
     for i = 1, #page.term do
-        screen.drawText(page.term[i].x, page.term[i].y, "  "..string.upper(page.term[i].name)..((page.term[i].count and " ("..page.term[i].count..")") or "  "), ((page.term[i].count and page.term[i].count > 0) and colors.red) or (page.term[i].name == page.term.active and colors.blue) or colors.lightBlue)
+        screen.drawText(page.term[i].x, page.term[i].y, "  "..string.upper(page.term[i].name)..((page.term[i].count and " ("..page.term[i].count..")  ") or "  "), ((page.term[i].count and page.term[i].count > 0) and colors.red) or (page.term[i].name == page.term.active and colors.blue) or colors.lightBlue)
     end
     if page.term.active == "home" then
-        screen.drawText(1,3,"STATE:", colors.blue)
+        --screen.drawText(1,3,"STATE:", colors.blue)
         --screen.drawText(11,3,config.program_state,colors.blue,(string.lower(config.program_state) == "unknown" and colors.red) or colors.white)
     elseif page.term.active == "settings" then
         screen.drawText(1,5,"SETTINGS", colors.blue)
@@ -562,6 +562,7 @@ function main()
         page.term[4].count = #config.errors
         draw_menu()
         touch()
+        sleep(.0)
     end
 end
 

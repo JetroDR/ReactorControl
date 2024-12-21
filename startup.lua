@@ -10,6 +10,7 @@ local files = {
 
 local branch = "rework2.0"
 local repoURL = "https://raw.githubusercontent.com/JetroDR/ReactorControl/"
+local need_update = false
 
 function init_log()
     if fs.exists(files.log) then
@@ -46,10 +47,23 @@ function read_config()
     end
 end
 
+function write_config()
+    if config then
+        table.sort(config)
+        myCfg = fs.open(files.config,"w")
+        myCfg.write(textutils.serialise(config))
+        myCfg.close()
+    else
+        log("error","Config is nill")
+    end
+end
+
 function check_version(FilePath, URL)
     log("debug", "checking "..FilePath)
+    File_Contents = ""
     if fs.exists(FilePath) then
         myFile = fs.open(FilePath, "r")
+        fileContents = ""
         fileContents = myFile.readAll()
         myFile.close()
 
@@ -77,6 +91,7 @@ function check_version(FilePath, URL)
         
     if http.checkURL(URL) then
         myGithub = http.get(URL)
+        fileContents = ""
         fileContents = myGithub.readAll()
         myGithub.close()
             
@@ -99,13 +114,18 @@ function check_version(FilePath, URL)
     else
         GithubVersion = "File not found"
     end
-
-    if fileVersion == GithubVersion  or File_Contents == Github_Contents then
-        log("debug", FilePath.." up to date")
+    if fileVersion == GithubVersion then
+        log("info", FilePath.." up to date "..fileVersion)
         return fileVersion
     else
-        log("debug", FilePath.." out of date, update required")
-        return false
+        if File_Contents == Github_Contents then
+            log("info", FilePath.." up to date "..File_Contents)
+            return fileVersion
+        else
+            log("info", FilePath.." out of date, update required")
+            need_update = true
+            return false
+        end
     end
 end
 
@@ -131,11 +151,28 @@ function main()
     print("-- BOOTING "..Path.." v"..Version.." --")
     if config.settings.check_for_updates.value then
         for i = 1, #config.files.boot do
-            print("Checking "..Path..config.files.boot[i].file)
-            check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
+            FileVersion = check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
+            term.setTextColor(colors.lightGray)
+            term.write("GET "..Path..config.files.boot[i].file)
+            term.setTextColor(colors.blue)
+            print((FileVersion == false and "") or (FileVersion ~= "" and " v"..FileVersion) or "")
         end
     end
-    boot()
+    if need_update then
+        term.setTextColor(colors.red)
+        print("")
+        print(Path.." "..Version.." out of date, update required.")
+        print("Do you wish to update? [Y/N]")
+        input = string.lower(read())
+        if input == "y" then
+            shell.run(Path.."/Installer/Installer.lua")
+            os.reboot()
+        else
+            boot()
+        end
+    else
+        boot()
+    end
 end
 
 main()
