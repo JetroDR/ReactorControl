@@ -1,5 +1,5 @@
 Name = "Display.lua"
-Version = "0.2.3"
+Version = "0.2.4"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -37,6 +37,12 @@ local page = {
     turbine = 1,
     warnings = 1,
     errors = 1,
+}
+
+local values = {
+    reactor = {},
+    turbine = {},
+    battery = {},
 }
 
 standalone_peripheral = true
@@ -159,6 +165,18 @@ function init_data()
             end
         end
     end
+
+    for i = 1, #reactor do
+
+    end
+    for i = 1, #turbine do
+        table.insert(values.turbine, {})
+        values.turbine[i].speed = turbine[i].getRotorSpeed()
+        values.turbine[i].speed_ROR = 0
+    end
+    for i = 1, #battery do
+
+    end
 end
 
 function draw_menu()
@@ -245,6 +263,11 @@ function draw_menu()
     end
     BatPercent = math.floor(BatPercent*(10^x))/(10^x)
 
+    for i = 1, #turbine do
+        values.turbine[i].speed_ROR = ((turbine[i].getRotorSpeed() - values.turbine[i].speed)*10)/10 -- ADD MATH.FLOOR
+        values.turbine[i].speed = turbine[i].getRotorSpeed()
+    end
+
     if page.mon.active == "home" then
         --draw_image("start", w-3-23, 4)
         --draw_image("stop", w-3-23, 14)
@@ -286,10 +309,16 @@ function draw_menu()
         screen.drawText(5,5, "COILS", colors.blue, colors.white)
         screen.drawText(2,6, "\131\131", (turbine[page.turbine].getEnergyProducedLastTick() > 10 and colors.yellow) or colors.red, colors.blue)
         screen.drawText(5,6, "ENERGY"..string.rep(" ", 10).." RF/t", colors.blue, colors.white)
-        screen.drawText(15,6, (math.floor(turbine[page.turbine].getEnergyProducedLastTick()*10)/10), colors.blue, colors.white)
+        screen.drawText(13,6, (math.floor(turbine[page.turbine].getEnergyProducedLastTick()*10)/10), colors.blue, colors.white)
         screen.drawText(2,7, "\131\131", ((turbine[page.turbine].getRotorSpeed() >= 1700 and turbine[page.turbine].getRotorSpeed() <= 1850) and colors.lime) or colors.red, colors.blue)
         screen.drawText(5,7, "SPEED"..string.rep(" ", 11).." RPM", colors.blue, colors.white)
-        screen.drawText(15,7, (math.floor(turbine[page.turbine].getRotorSpeed()*10)/10), colors.blue, colors.white)
+        screen.drawText(13,7, (math.floor(turbine[page.turbine].getRotorSpeed()*10)/10), colors.blue, colors.white)
+        screen.drawText(30,7, "\131\131", (values.turbine[page.turbine].speed_ROR > 0 and colors.lime) or (values.turbine[page.turbine].speed_ROR > 0 and colors.red) or colors.lightGray, colors.blue)
+        screen.drawText(33,7, "ROR"..string.rep(" ", 4).." RPM/t", colors.blue, colors.white)
+        screen.drawText(37,7, values.turbine[page.turbine].speed_ROR, colors.blue, colors.white)
+        screen.drawText(2,8, "\131\131", (turbine[page.turbine].getFluidFlowRate() >= 2000 and colors.lightBlue) or colors.red, colors.blue)
+        screen.drawText(5,8, "STEAM"..string.rep(" ", 12).."mb/t", colors.blue, colors.white)
+        screen.drawText(13,8, (math.floor(turbine[page.turbine].getFluidFlowRate()*10)/10), colors.blue, colors.white)
     elseif page.mon.active == "battery" then
         draw_image("battery",2,4)
         screen.drawRect(4,5,math.floor(BatPercent/100*20),4,((BatPercent > 75 and colors.lime) or (BatPercent > 50 and colors.yellow) or (BatPercent > 20 and colors.orange) or colors.red),true,((BatPercent > 75 and colors.lime) or (BatPercent > 50 and colors.yellow) or (BatPercent > 20 and colors.orange) or colors.red))
@@ -502,6 +531,12 @@ function touch()
                                 end
                             end
                         end
+                        if input[1] == "reboot" then
+                            os.reboot()
+                        elseif input[1] == "update" then
+                            shell.run(Path.."/Installer/Installer.lua")
+                            os.reboot()
+                        end
                         if not(found) then
                             feedback = "Unknown command "..input[1]
                         end
@@ -524,7 +559,6 @@ function touch()
             end
             for i = 1, (h-7)-1 do
                 if x >= w-5 and x <= w-3 and y == 5+i%(h-7) then
-                    log("info","OK"..i+((page.warnings-1)*(h-7))-(page.warnings-1))
                     table.remove(config.warnings,i+((page.warnings-1)*(h-7))-(page.warnings-1))
                     write_config()
                 end
@@ -541,7 +575,6 @@ function touch()
             end
             for i = 1, (h-7)-1 do
                 if x >= w-5 and x <= w-3 and y == 5+i%(h-7) then
-                    log("info","OK"..i+((page.errors-1)*(h-7))-(page.errors-1))
                     table.remove(config.errors,i+((page.errors-1)*(h-7))-(page.errors-1))
                     write_config()
                 end
@@ -562,7 +595,6 @@ function main()
         page.term[4].count = #config.errors
         draw_menu()
         touch()
-        sleep(.0)
     end
 end
 

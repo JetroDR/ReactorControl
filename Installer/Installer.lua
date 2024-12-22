@@ -1,5 +1,5 @@
 Name = "Installer.lua"
-Version = "0.4.1"
+Version = "0.4.2"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -8,9 +8,7 @@ local files = {
     installation = {
         files = "/Installer/files.json",
     },
-    apis = {
-        screen = "/System/APIs/screen.lua",
-    },
+    apis = {},
 }
 local config = {
     debug = true,
@@ -80,7 +78,7 @@ function check_version(FilePath, URL)
             fileVersion = fileVersion:sub(1,#fileVersion-1)
             log("debug", "Local Version: "..fileVersion)
         else
-            fileVersion = ""
+            fileVersion = "1"
             File_Contents = fileContents
         end
     else
@@ -108,33 +106,33 @@ function check_version(FilePath, URL)
             GithubVersion = GithubVersion:sub(1,#GithubVersion-1)
             log("debug", "GitHub Version: "..GithubVersion)
         else
-            GithubVersion = ""
+            GithubVersion = "2"
             Github_Contents = fileContents
         end
     else
         GithubVersion = "File not found"
     end
     if fileVersion == GithubVersion then
-        log("info", FilePath.." up to date "..fileVersion)
-        return fileVersion
+        log("info", FilePath.." up to date")
+        return fileVersion, true
     else
         if File_Contents == Github_Contents then
-            log("info", FilePath.." up to date "..File_Contents)
-            return fileVersion
+            log("info", FilePath.." up to date")
+            return fileVersion, true
         else
-            log("debug", FilePath.." out of date, update required")
-            return false
+            log("info", FilePath.." out of date, update required")
+            return fileVersion, false
         end
     end
 end
 
 function download_file(URL,FilePath)
-    FileVersion = check_version(FilePath, URL)
+    FileVersion, updated = check_version(FilePath, URL)
     term.setTextColor(colors.lightGray)
     term.write("GET "..FilePath)
-    term.setTextColor(colors.blue)
-    print((FileVersion == false and "") or (FileVersion ~= "" and " v"..FileVersion) or "")
-    if not(FileVersion) then
+    term.setTextColor((updated and colors.blue) or colors.red)
+    print((FileVersion ~= "1" and " v"..FileVersion) or "v"..tostring(updated))
+    if not(updated) then
         if fs.exists(FilePath) then
             log("warning", "File "..FilePath.." already exists, deleting old file")
             fs.delete(FilePath)
@@ -208,12 +206,6 @@ function load_API()
 end
 
 function install_files()
-    screen.clear()
-    screen.clearLine(1,colors.gray)
-    w,h = term.getSize()
-    screen.drawText(math.floor((w - string.len(Path.." - "..Name.." "..Version))/2),1, Path.." - "..Name.." "..Version)
-    print("")
-
     myFiles = fs.open(Path..files.installation.files, "r")
     installation_files = textutils.unserialiseJSON(myFiles.readAll())
     myFiles.close()
@@ -229,11 +221,21 @@ function main()
     init_log()
     arguments()
     if not(update) then
+        term.setBackgroundColor(colors.black)
+        term.clear()
+        term.setCursorPos(1,1)
+        term.clearLine(colors.gray)
+        w,h = term.getSize()
+        term.setCursorPos(math.floor((w - string.len(Path.." - "..Name.." "..Version))/2),1)
+        print(Path.." - "..Name.." "..Version)
+        print("")
         install_installation_files()
         load_API()
         install_files()
         --configure_settings()
     end
+    term.setBackgroundColor(colors.black)
+    term.setTextColor(colors.white)
 end
 
 main()

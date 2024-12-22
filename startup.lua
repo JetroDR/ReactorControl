@@ -1,5 +1,5 @@
 Name = "startup.lua"
-Version = "0.2.2"
+Version = "0.2.3"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -80,7 +80,7 @@ function check_version(FilePath, URL)
             fileVersion = fileVersion:sub(1,#fileVersion-1)
             log("debug", "Local Version: "..fileVersion)
         else
-            fileVersion = ""
+            fileVersion = "1"
             File_Contents = fileContents
         end
     else
@@ -108,23 +108,23 @@ function check_version(FilePath, URL)
             GithubVersion = GithubVersion:sub(1,#GithubVersion-1)
             log("debug", "GitHub Version: "..GithubVersion)
         else
-            GithubVersion = ""
+            GithubVersion = "2"
             Github_Contents = fileContents
         end
     else
         GithubVersion = "File not found"
     end
     if fileVersion == GithubVersion then
-        log("info", FilePath.." up to date "..fileVersion)
-        return fileVersion
+        log("info", FilePath.." up to date")
+        return fileVersion, true
     else
         if File_Contents == Github_Contents then
-            log("info", FilePath.." up to date "..File_Contents)
-            return fileVersion
+            log("info", FilePath.." up to date")
+            return fileVersion, true
         else
             log("info", FilePath.." out of date, update required")
             need_update = true
-            return false
+            return fileVersion, false
         end
     end
 end
@@ -151,11 +151,11 @@ function main()
     print("-- BOOTING "..Path.." v"..Version.." --")
     if config.settings.check_for_updates.value then
         for i = 1, #config.files.boot do
-            FileVersion = check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
+            FileVersion, updated = check_version(Path..config.files.boot[i].file, repoURL..branch..config.files.boot[i].file)
             term.setTextColor(colors.lightGray)
             term.write("GET "..Path..config.files.boot[i].file)
-            term.setTextColor(colors.blue)
-            print((FileVersion == false and "") or (FileVersion ~= "" and " v"..FileVersion) or "")
+            term.setTextColor((updated and colors.blue) or colors.red)
+            print((FileVersion ~= "1" and " v"..FileVersion) or "v"..tostring(updated))
         end
     end
     if need_update then

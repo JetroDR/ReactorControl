@@ -18,11 +18,17 @@ function getEnergyProducedLastTick()
     return energy
 end
 
+function getFluidFlowRate()
+    local fluid = 2000
+    return fluid
+end
+
 return {
     {
         getActive = getActive,
         getRotorSpeed = getRotorSpeed,
         getInductorEngaged = getInductorEngaged,
-        getEnergyProducedLastTick = getEnergyProducedLastTick
+        getEnergyProducedLastTick = getEnergyProducedLastTick,
+        getFluidFlowRate = getFluidFlowRate,
     }
 }

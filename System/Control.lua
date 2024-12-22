@@ -1,5 +1,5 @@
 Name = "Control.lua"
-Version = "0.2.1"
+Version = "0.2.2"
 Author = "Jetro"
 
 local Path = "ReactorControl"
@@ -210,6 +210,18 @@ function control()
 
     for i = 1, #battery do
     
+    end
+
+    if #config.warnings > 0 or #config.errors > 0 then
+        if not(rs.getOutput(config.settings.redstone_warning_side.value)) then
+            rs.setOutput(config.settings.redstone_warning_side.value, true)
+            log("debug", "redstone on")
+        end
+    else
+        if rs.getOutput(config.settings.redstone_warning_side.value) then
+            rs.setOutput(config.settings.redstone_warning_side.value, false)
+            log("debug", "redstone off")
+        end
     end
 end
 

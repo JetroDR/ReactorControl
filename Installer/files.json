@@ -6,7 +6,6 @@
     "System": {
         "Control.lua": "System/Control.lua",
         "Display.lua": "System/Display.lua",
-        "Redstone.lua": "System/Redstone.lua",
         "Datalogger.lua": "System/Datalogger.lua",
         "config.cfg": "System/Files/config.cfg"
     },
