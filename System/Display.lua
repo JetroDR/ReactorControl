@@ -45,12 +45,10 @@ local values = {
     battery = {},
 }
 
-standalone_peripheral = true
-if not(standalone_peripheral) then
-    local reactor = {}
-    local turbine = {}
-    local battery = {}
-end
+standalone_peripheral = false
+local reactor = {}
+local turbine = {}
+local battery = {}
 
 
 function log(type, text)
@@ -315,7 +313,7 @@ function draw_menu()
         screen.drawText(13,7, (math.floor(turbine[page.turbine].getRotorSpeed()*10)/10), colors.blue, colors.white)
         screen.drawText(30,7, "\131\131", (values.turbine[page.turbine].speed_ROR > 0 and colors.lime) or (values.turbine[page.turbine].speed_ROR > 0 and colors.red) or colors.lightGray, colors.blue)
         screen.drawText(33,7, "ROR"..string.rep(" ", 4).." RPM/t", colors.blue, colors.white)
-        screen.drawText(37,7, values.turbine[page.turbine].speed_ROR, colors.blue, colors.white)
+        --screen.drawText(37,7, values.turbine[page.turbine].speed_ROR, colors.blue, colors.white)
         screen.drawText(2,8, "\131\131", (turbine[page.turbine].getFluidFlowRate() >= 2000 and colors.lightBlue) or colors.red, colors.blue)
         screen.drawText(5,8, "STEAM"..string.rep(" ", 12).."mb/t", colors.blue, colors.white)
         screen.drawText(13,8, (math.floor(turbine[page.turbine].getFluidFlowRate()*10)/10), colors.blue, colors.white)
@@ -397,8 +395,20 @@ function touch()
             if x>= 12 and x <= 15 and y == 3 then    
                 if config.button.automode then
                     config.button.automode = false
+                    for i = 1, #reactor do
+                        reactor[i].setActive(false)
+                    end
+                    for i = 1, #turbine do
+                        turbine[i].setActive(false)
+                    end
                 else
                     config.button.automode = true
+                    for i = 1, #reactor do
+                        reactor[i].setActive(true)
+                    end
+                    for i = 1, #turbine do
+                        turbine[i].setActive(true)
+                    end
                 end
                 write_config()
             end

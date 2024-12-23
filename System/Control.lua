@@ -8,12 +8,10 @@ local files = {
     log = Path.."/System/Files/ReactorControl.log",
 }
 
-standalone_peripheral = true
-if not(standalone_peripheral) then
-    local reactor = {}
-    local turbine = {}
-    local battery = {}
-end
+standalone_peripheral = false
+local reactor = {}
+local turbine = {}
+local battery = {}
 
 function log(type, text)
     if (type == "debug" and config.settings.debug.value) or type ~= "debug" then
@@ -203,6 +201,20 @@ function control()
                     if not(turbine[i].getActive()) then
                         turbine[i].setActive(true)
                     end
+                end
+            end
+            if turbine[i].getActive() and turbine[i].getRotorSpeed() > config.settings.inductor_engage_high.value then
+                turbine[i].setInductorEngaged(true)
+            elseif not(turbine[i].getActive()) and turbine[i].getRotorSpeed() > config.settings.inductor_engage_low.value then
+                turbine[i].setInductorEngaged(true)
+            else
+                turbine[i].setInductorEngaged(false)
+            end
+        else
+            if turbine[i].getRotorSpeed() > 1950 then
+                if not(turbine[i].getInductorEngaged()) then
+                    turbine[i].setInductorEngaged(true)
+                    log("warning","turbine "..i..": inductor engaged - exceeded emergency speed")
                 end
             end
         end
